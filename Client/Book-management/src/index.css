@@ -1,0 +1,361 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is([data-theme="dark"], [data-theme="dark"] *));
+
+/* ==========================================================================
+   NEUBRUTALISM DESIGN SYSTEM
+   ========================================================================== */
+
+:root,
+[data-theme="light"] {
+  --bg-page: #fffdf5;
+  --bg-card: #ffffff;
+  --bg-card-alt: #fff5e6;
+  --bg-panel: #ffe600;
+
+  --text-ink: #000000;
+  --text-body: #1f1f1f;
+  --text-mute: #525252;
+
+  --border-color: #000000;
+  --shadow-color: #000000;
+
+  --pop-yellow: #ffde59;
+  --pop-pink: #ff66c4;
+  --pop-cyan: #00e5ff;
+  --pop-lime: #ccff00;
+  --pop-orange: #ff914d;
+  --pop-purple: #b197fc;
+  --pop-red: #ff4d4d;
+  --pop-green: #38ef7d;
+
+  --input-bg: #ffffff;
+  --modal-bg: #ffffff;
+
+  --nb-border-width: 3px;
+  --nb-radius: 12px;
+  --nb-radius-sm: 8px;
+  --nb-radius-pill: 9999px;
+}
+
+[data-theme="dark"] {
+  /* Cyber Neubrutalism Dark Mode */
+  --bg-page: #121216;
+  --bg-card: #1c1c24;
+  --bg-card-alt: #262632;
+  --bg-panel: #2a2a38;
+
+  --text-ink: #ffffff;
+  --text-body: #e2e8f0;
+  --text-mute: #a0aec0;
+
+  --border-color: #000000;
+  --shadow-color: #000000;
+
+  --pop-yellow: #ffe600;
+  --pop-pink: #ff3399;
+  --pop-cyan: #00f0ff;
+  --pop-lime: #ccff00;
+  --pop-orange: #ff7700;
+  --pop-purple: #a855f7;
+  --pop-red: #ff3344;
+  --pop-green: #00ff66;
+
+  --input-bg: #1c1c24;
+  --modal-bg: #1c1c24;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-ink);
+    font-family:
+      "Plus Jakarta Sans",
+      system-ui,
+      -apple-system,
+      sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    transition: background-color 0.2s ease;
+  }
+}
+
+/* Custom Scrollbar - Neubrutalist */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+  border-left: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pop-yellow);
+  border: 2px solid #000000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pop-lime);
+}
+
+/* ==========================================================================
+   NEUBRUTALIST UTILITIES & CARDS
+   ========================================================================== */
+
+.nb-card {
+  background-color: var(--bg-card);
+  border: var(--nb-border-width) solid var(--border-color);
+  border-radius: var(--nb-radius);
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.2s ease;
+}
+
+.nb-card-hover {
+  cursor: pointer;
+}
+
+.nb-card-hover:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 7px 7px 0px 0px var(--shadow-color);
+}
+
+.nb-card-hover:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+}
+
+.nb-card-yellow {
+  background-color: var(--pop-yellow);
+  color: #000000;
+}
+
+.nb-card-pink {
+  background-color: var(--pop-pink);
+  color: #000000;
+}
+
+.nb-card-cyan {
+  background-color: var(--pop-cyan);
+  color: #000000;
+}
+
+.nb-card-lime {
+  background-color: var(--pop-lime);
+  color: #000000;
+}
+
+.nb-card-orange {
+  background-color: var(--pop-orange);
+  color: #000000;
+}
+
+.nb-card-purple {
+  background-color: var(--pop-purple);
+  color: #000000;
+}
+
+/* ==========================================================================
+   NEUBRUTALIST BUTTONS
+   ========================================================================== */
+
+.nb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  font-size: 0.925rem;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--nb-radius-sm);
+  box-shadow: 3.5px 3.5px 0px 0px var(--shadow-color);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    background-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.nb-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5.5px 5.5px 0px 0px var(--shadow-color);
+}
+
+.nb-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px 0px var(--shadow-color);
+}
+
+.nb-btn-yellow {
+  background-color: var(--pop-yellow);
+  color: #000000;
+}
+
+.nb-btn-pink {
+  background-color: var(--pop-pink);
+  color: #000000;
+}
+
+.nb-btn-cyan {
+  background-color: var(--pop-cyan);
+  color: #000000;
+}
+
+.nb-btn-lime {
+  background-color: var(--pop-lime);
+  color: #000000;
+}
+
+.nb-btn-white {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.nb-btn-black {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.nb-btn-sm {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  border-width: 2px;
+  box-shadow: 2.5px 2.5px 0px 0px var(--shadow-color);
+}
+
+.nb-btn-sm:hover {
+  transform: translate(-1.5px, -1.5px);
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+}
+
+.nb-btn-sm:active {
+  transform: translate(1.5px, 1.5px);
+  box-shadow: 1px 1px 0px 0px var(--shadow-color);
+}
+
+/* ==========================================================================
+   NEUBRUTALIST INPUTS & CONTROLS
+   ========================================================================== */
+
+.nb-input {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-ink);
+  background-color: var(--input-bg);
+  border: 2.5px solid var(--border-color);
+  border-radius: var(--nb-radius-sm);
+  box-shadow: 3px 3px 0px 0px var(--shadow-color);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease,
+    border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.nb-input:focus {
+  outline: none;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px 0px var(--shadow-color);
+}
+
+.nb-input-has-icon {
+  padding-left: 2.75rem !important;
+}
+
+/* ==========================================================================
+   NEUBRUTALIST BADGES
+   ========================================================================== */
+
+.nb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 2px solid #000000;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0px 0px #000000;
+  white-space: nowrap;
+}
+
+.nb-badge-yellow {
+  background-color: var(--pop-yellow);
+  color: #000000;
+}
+
+.nb-badge-pink {
+  background-color: var(--pop-pink);
+  color: #000000;
+}
+
+.nb-badge-cyan {
+  background-color: var(--pop-cyan);
+  color: #000000;
+}
+
+.nb-badge-lime {
+  background-color: var(--pop-lime);
+  color: #000000;
+}
+
+.nb-badge-orange {
+  background-color: var(--pop-orange);
+  color: #000000;
+}
+
+.nb-badge-purple {
+  background-color: var(--pop-purple);
+  color: #000000;
+}
+
+.nb-badge-white {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* Animations */
+@keyframes nbPop {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes nbSlideDown {
+  0% {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-pop {
+  animation: nbPop 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-slide-down {
+  animation: nbSlideDown 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
