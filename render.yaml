@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: book-management-backend
+    env: node
+    rootDir: Server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: DB_NAME
+        value: Book-Management
