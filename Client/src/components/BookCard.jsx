@@ -8,7 +8,6 @@ import {
   Calendar,
   BookOpen,
   Quote,
-  Tag,
   Bookmark,
 } from "lucide-react";
 import { formatDate, getBookAge, getGenreBadgeClass } from "../utils/format";
@@ -24,13 +23,13 @@ const FavoriteButton = ({ isFavorite, onClick }) => (
     className={`w-9 h-9 rounded-lg border-2 border-black flex items-center justify-center transition-all cursor-pointer ${
       isFavorite
         ? "bg-[#FF4D4D] text-white shadow-[2px_2px_0px_0px_#000]"
-        : "bg-white hover:bg-[#FFDE59] text-black shadow-[2px_2px_0px_0px_#000]"
+        : "bg-white dark:bg-[#1f2334] hover:bg-[#FFDE59] dark:hover:bg-[#282d42] text-black dark:text-white shadow-[2px_2px_0px_0px_#000]"
     }`}
     title={isFavorite ? "Remove Favorite" : "Mark Favorite"}
   >
     <Heart
       className={`w-5 h-5 ${
-        isFavorite ? "fill-white text-white" : "text-black stroke-2.5"
+        isFavorite ? "fill-white text-white" : "text-black dark:text-white stroke-2.5"
       }`}
     />
   </button>
@@ -42,9 +41,15 @@ const BookCard = ({
   onDelete,
   onToggleFavorite,
   onOpenJournal,
+  isExiting = false,
 }) => {
   const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
+
+  // Guard against book being null or undefined
+  if (!book) {
+    return null;
+  }
   const bookId = book._id || book.id;
   const formattedPrice = `$${Number(book.bookPrice || 0).toFixed(2)}`;
   const bookAge = getBookAge(book.publishDate);
@@ -163,7 +168,7 @@ const BookCard = ({
   }
 
   return (
-    <article className="nb-card nb-card-hover p-5 flex flex-col justify-between h-full group">
+    <article className={`nb-card nb-card-hover p-5 flex flex-col justify-between h-full group book-card ${isExiting ? 'book-card-exiting' : ''}`}>
       <div>
         {/* Header row: Genre, Shelf & Favorite */}
         <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
@@ -190,10 +195,10 @@ const BookCard = ({
               src={book.coverUrl}
               alt={book.bookName}
               onError={() => setImageError(true)}
-              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover object-center"
             />
           ) : (
-            <div className="w-full h-full p-4 flex flex-col justify-between bg-gradient-to-br from-[#FFDE59] to-[#FF66C4] text-black">
+            <div className="w-full h-full p-4 flex flex-col justify-between bg-gradient-to-br from-[#FFDE59] to-[#FF66C4] dark:from-[#2a2238] dark:to-[#1a2236] text-black dark:text-white">
               <div className="flex items-center justify-between">
                 <BookOpen className="w-6 h-6 stroke-2.5" />
                 <span className="text-[10px] font-black uppercase tracking-wider bg-black text-white px-2 py-0.5 rounded">

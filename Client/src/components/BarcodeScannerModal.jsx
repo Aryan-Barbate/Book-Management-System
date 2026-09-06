@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { X, Camera, RefreshCw, AlertCircle, ScanLine, Check } from "lucide-react";
+import { X, Camera, RefreshCw, ScanLine, Check } from "lucide-react";
 
 const BarcodeScannerModal = ({ isOpen, onClose, onDetected }) => {
   const videoRef = useRef(null);
@@ -8,18 +8,8 @@ const BarcodeScannerModal = ({ isOpen, onClose, onDetected }) => {
   const [hasCamera, setHasCamera] = useState(true);
   const [cameraError, setCameraError] = useState("");
   const [facingMode, setFacingMode] = useState("environment");
-  const [isScanning, setIsScanning] = useState(false);
   const [manualIsbn, setManualIsbn] = useState("");
-  const [supportedFormats, setSupportedFormats] = useState(null);
-
-  // Check BarcodeDetector support
-  useEffect(() => {
-    if (typeof window !== "undefined" && "BarcodeDetector" in window) {
-      window.BarcodeDetector.getSupportedFormats()
-        .then((formats) => setSupportedFormats(formats))
-        .catch(() => setSupportedFormats([]));
-    }
-  }, []);
+  const [isExiting, setIsExiting] = useState(false);
 
   // Camera stream setup
   useEffect(() => {
@@ -35,9 +25,20 @@ const BarcodeScannerModal = ({ isOpen, onClose, onDetected }) => {
     };
   }, [isOpen, facingMode]);
 
+
+  // Handle exit animation completion
+  useEffect(() => {
+    if (isExiting) {
+      const timer = setTimeout(() => {
+        setIsExiting(false);
+        onClose();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isExiting, onClose]);
+
   const startCamera = async () => {
     setCameraError("");
-    setIsScanning(true);
 
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
@@ -68,7 +69,6 @@ const BarcodeScannerModal = ({ isOpen, onClose, onDetected }) => {
           ? "Camera permission denied. Please allow camera access or type the ISBN manually."
           : "Unable to access camera on this device. You can type the ISBN below."
       );
-      setIsScanning(false);
     }
   };
 
@@ -84,7 +84,6 @@ const BarcodeScannerModal = ({ isOpen, onClose, onDetected }) => {
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-    setIsScanning(false);
   };
 
   const toggleFacingMode = () => {
@@ -164,10 +163,11 @@ const BarcodeScannerModal = ({ isOpen, onClose, onDetected }) => {
     }
   };
 
-  if (!isOpen) return null;
+  // Don't render when closed and not exiting
+  if (!isOpen && !isExiting) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-pop">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs ${isExiting ? 'modal-exiting' : 'animate-pop'}`}>
       <div className="w-full max-w-lg bg-white dark:bg-[#1C1C24] border-3 border-black rounded-2xl shadow-[8px_8px_0px_0px_#000] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 nb-card-cyan border-b-3 border-black">
@@ -188,7 +188,7 @@ const BarcodeScannerModal = ({ isOpen, onClose, onDetected }) => {
           <button
             onClick={() => {
               stopCamera();
-              onClose();
+              setIsExiting(true);
             }}
             className="w-8 h-8 rounded-lg bg-white text-black border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#FF4D4D] hover:text-white transition-colors cursor-pointer"
             aria-label="Close"

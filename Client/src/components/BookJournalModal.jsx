@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Quote as QuoteIcon,
@@ -9,7 +9,6 @@ import {
   Bookmark,
   Sparkles,
   Save,
-  Calendar,
 } from "lucide-react";
 import { baseBookURL } from "../../axiosInstance";
 
@@ -20,8 +19,22 @@ const BookJournalModal = ({ isOpen, onClose, book, onBookUpdated, onToast }) => 
   const [quoteNote, setQuoteNote] = useState("");
   const [notes, setNotes] = useState(book?.notes || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
 
-  if (!isOpen || !book) return null;
+
+  // Handle exit animation completion
+  useEffect(() => {
+    if (isExiting) {
+      const timer = setTimeout(() => {
+        setIsExiting(false);
+        onClose();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isExiting, onClose]);
+
+  // Don't render when closed and not exiting
+  if (!isOpen && !isExiting || !book) return null;
 
   const quotes = Array.isArray(book.quotes) ? book.quotes : [];
 
@@ -111,7 +124,7 @@ const BookJournalModal = ({ isOpen, onClose, book, onBookUpdated, onToast }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-pop">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs ${isExiting ? 'modal-exiting' : 'animate-pop'}`}>
       <div className="w-full max-w-2xl bg-white dark:bg-[#1C1C24] border-3 border-black rounded-2xl shadow-[8px_8px_0px_0px_#000] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 nb-card-purple border-b-3 border-black shrink-0">
@@ -138,7 +151,7 @@ const BookJournalModal = ({ isOpen, onClose, book, onBookUpdated, onToast }) => 
           </div>
 
           <button
-            onClick={onClose}
+            onClick={() => setIsExiting(true)}
             className="w-8 h-8 rounded-lg bg-white text-black border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#FF4D4D] hover:text-white transition-colors cursor-pointer shrink-0"
             aria-label="Close"
           >

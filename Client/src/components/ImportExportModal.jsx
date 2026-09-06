@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Download,
@@ -7,7 +7,6 @@ import {
   CheckCircle,
   AlertTriangle,
   FileCode,
-  Sparkles,
   Loader2,
 } from "lucide-react";
 import {
@@ -27,8 +26,22 @@ const ImportExportModal = ({ isOpen, onClose, books, onImportSuccess, onToast })
   const [importFormat, setImportFormat] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isExiting, setIsExiting] = useState(false);
 
-  if (!isOpen) return null;
+
+  // Handle exit animation completion
+  useEffect(() => {
+    if (isExiting) {
+      const timer = setTimeout(() => {
+        setIsExiting(false);
+        onClose();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isExiting, onClose]);
+
+  // Don't render when closed and not exiting
+  if (!isOpen && !isExiting) return null;
 
   const handleExportJSON = () => {
     try {
@@ -131,7 +144,7 @@ const ImportExportModal = ({ isOpen, onClose, books, onImportSuccess, onToast })
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-pop">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs ${isExiting ? 'modal-exiting' : 'animate-pop'}`}>
       <div className="w-full max-w-xl bg-white dark:bg-[#1C1C24] border-3 border-black rounded-2xl shadow-[8px_8px_0px_0px_#000] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 nb-card-yellow border-b-3 border-black shrink-0">
@@ -150,7 +163,7 @@ const ImportExportModal = ({ isOpen, onClose, books, onImportSuccess, onToast })
           </div>
 
           <button
-            onClick={onClose}
+            onClick={() => setIsExiting(true)}
             className="w-8 h-8 rounded-lg bg-white text-black border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#FF4D4D] hover:text-white transition-colors cursor-pointer"
             aria-label="Close"
           >

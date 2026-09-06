@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import BookCard from "./BookCard";
 import PaginationControls from "./PaginationControls";
 import BookJournalModal from "./BookJournalModal";
@@ -50,10 +50,59 @@ const BookList = ({
   onLimitChange,
   onToast,
 }) => {
-  const { user, updateCustomShelves, isAuthenticated } = useAuth();
+  const { user, updateCustomShelves } = useAuth();
   const [activeJournalBook, setActiveJournalBook] = useState(null);
   const [isAddingShelf, setIsAddingShelf] = useState(false);
   const [newShelfName, setNewShelfName] = useState("");
+  const [exitingIds, setExitingIds] = useState(new Set());
+  const prevBooksRef = useRef([]);
+  const exitTimeoutsRef = useRef({});
+
+  // Track exiting books for animation
+  useEffect(() => {
+    // Guard against books not being an array
+    if (!Array.isArray(books)) {
+      console.error('books is not an array:', books);
+      return;
+    }
+
+    // Calculate IDs that were in the previous render but are not in the current render
+    const prevIds = new Set(prevBooksRef.current.map(b => b._id || b.id));
+    const currentIds = new Set(books.map(b => b._id || b.id));
+    const removedIds = [...prevIds].filter(id => !currentIds.has(id));
+
+    // Update the previous books ref for next comparison
+    prevBooksRef.current = books;
+
+    // Add removed IDs to exitingIds
+    setExitingIds(prev => {
+      const newSet = new Set(prev);
+      removedIds.forEach(id => newSet.add(id));
+      return newSet;
+    });
+
+    // Set timeouts to remove from exitingIds after exit duration (200ms)
+    removedIds.forEach(id => {
+      // Clear any existing timeout for this ID
+      if (exitTimeoutsRef.current[id]) {
+        clearTimeout(exitTimeoutsRef.current[id]);
+      }
+      const timeoutId = setTimeout(() => {
+        setExitingIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(id);
+          return newSet;
+        });
+      }, 200);
+      exitTimeoutsRef.current[id] = timeoutId;
+    });
+
+    // Cleanup: return a function to clear all timeouts
+    return () => {
+      Object.values(exitTimeoutsRef.current).forEach(timeoutId => clearTimeout(timeoutId));
+      exitTimeoutsRef.current = {};
+    };
+  }, [books]);
 
   const userShelves = user?.customShelves?.length
     ? user.customShelves
@@ -134,7 +183,7 @@ const BookList = ({
                 className={`p-2 rounded-lg border-2 transition-all cursor-pointer ${
                   viewMode === "grid"
                     ? "bg-[#CCFF00] text-black border-black shadow-[2px_2px_0px_0px_#000]"
-                    : "bg-white dark:bg-white/10 text-black dark:text-white border-black/20 dark:border-white/20 hover:bg-[#FFDE59] hover:border-black"
+                    : "bg-white dark:bg-[#1f2334] text-black dark:text-white border-black/20 dark:border-[#3b4366] hover:bg-[#FFDE59] dark:hover:bg-[#282d42] dark:hover:text-[#FFDE59]"
                 }`}
                 title="Grid View"
               >
@@ -145,7 +194,7 @@ const BookList = ({
                 className={`p-2 rounded-lg border-2 transition-all cursor-pointer ${
                   viewMode === "list"
                     ? "bg-[#CCFF00] text-black border-black shadow-[2px_2px_0px_0px_#000]"
-                    : "bg-white dark:bg-white/10 text-black dark:text-white border-black/20 dark:border-white/20 hover:bg-[#FFDE59] hover:border-black"
+                    : "bg-white dark:bg-[#1f2334] text-black dark:text-white border-black/20 dark:border-[#3b4366] hover:bg-[#FFDE59] dark:hover:bg-[#282d42] dark:hover:text-[#FFDE59]"
                 }`}
                 title="List View"
               >
@@ -210,7 +259,7 @@ const BookList = ({
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all border-2 border-black flex items-center gap-1.5 cursor-pointer ${
                     isSelected
                       ? "bg-[#00E5FF] text-black shadow-[2.5px_2.5px_0px_0px_#000] -translate-y-0.5"
-                      : "bg-white text-black hover:bg-neutral-100 shadow-[1px_1px_0px_0px_#000]"
+                      : "bg-white dark:bg-[#1f2334] text-black dark:text-white hover:bg-neutral-100 dark:hover:bg-[#282d42] shadow-[1px_1px_0px_0px_#000]"
                   }`}
                 >
                   <Bookmark
@@ -358,26 +407,26 @@ const BookList = ({
       )}
 
       {/* Empty State */}
-      {!isLoading && !fetchError && books.length === 0 && (
-        <div className="nb-card nb-card-yellow p-10 text-center my-8">
+      {!isLoading && !fetchError && Array.isArray(books) && books.length === 0 && (
+        <div className="nb-card p-10 text-center my-8 bg-[#FFDE59] dark:bg-[#161824] text-black dark:text-white border-3 border-black dark:border-[#3b4366] transition-colors">
           <div className="w-16 h-16 rounded-xl bg-black text-[#CCFF00] border-3 border-black flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_0px_#000]">
             <BookX className="w-8 h-8 stroke-2.5" />
           </div>
-          <h3 className="text-2xl font-black mb-2 uppercase">
+          <h3 className="text-2xl font-black mb-2 uppercase text-black dark:text-white">
             NO MATCHING BOOKS FOUND
           </h3>
-          <p className="text-sm font-bold text-black/80 max-w-sm mx-auto mb-6">
+          <p className="text-sm font-bold text-black/80 dark:text-slate-300 max-w-sm mx-auto mb-6">
             We couldn't find any literature matching your current search, shelf,
             or genre selection.
           </p>
-          <button onClick={onResetFilters} className="nb-btn nb-btn-black">
+          <button onClick={onResetFilters} className="nb-btn nb-btn-black dark:bg-[#ffd633] dark:text-black dark:hover:bg-[#ccff00]">
             RESET ALL FILTERS
           </button>
         </div>
       )}
 
       {/* Book Grid / List */}
-      {!isLoading && !fetchError && books.length > 0 && (
+      {!isLoading && !fetchError && Array.isArray(books) && books.length > 0 && (
         <>
           <div
             className={
@@ -386,16 +435,20 @@ const BookList = ({
                 : "space-y-4"
             }
           >
-            {books.map((book) => (
-              <BookCard
-                key={book._id || book.id}
-                book={book}
-                viewMode={viewMode}
-                onDelete={onDelete}
-                onToggleFavorite={onToggleFavorite}
-                onOpenJournal={(b) => setActiveJournalBook(b)}
-              />
-            ))}
+            {books.map((book) => {
+              const isExiting = exitingIds.has(book._id || book.id);
+              return (
+                <BookCard
+                  key={book._id || book.id}
+                  book={book}
+                  viewMode={viewMode}
+                  onDelete={onDelete}
+                  onToggleFavorite={onToggleFavorite}
+                  onOpenJournal={(b) => setActiveJournalBook(b)}
+                  isExiting={isExiting}
+                />
+              );
+            })}
           </div>
 
           {/* Server-Side Pagination Controls */}
