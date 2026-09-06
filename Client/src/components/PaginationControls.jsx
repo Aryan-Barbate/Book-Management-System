@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const PaginationControls = ({
   currentPage = 1,

@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, DollarSign, Tag, Heart, Award, Quote, BookmarkCheck } from "lucide-react";
+import { BookOpen, DollarSign, Tag, Award, Quote } from "lucide-react";
 
 const Stats = ({ books, totalBooksCount }) => {
   if (!books || books.length === 0) return null;

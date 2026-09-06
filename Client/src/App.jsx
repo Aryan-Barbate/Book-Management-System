@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/Home";
 import BookForm from "./components/BookForm";
@@ -23,7 +23,6 @@ const MainApp = () => {
   const [fetchError, setFetchError] = useState(null);
   const { toasts, addToast, dismissToast } = useToasts();
   const { isAuthModalOpen, closeAuthModal, user } = useAuth();
-  const initialFetchDone = useRef(false);
 
   const handleToggleTheme = useCallback(() => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));

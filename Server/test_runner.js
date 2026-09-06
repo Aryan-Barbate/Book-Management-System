@@ -1,5 +1,4 @@
 const assert = require("assert");
-const crypto = require("crypto");
 const { hashPassword, comparePassword } = require("./utils/password");
 const { signToken, verifyToken } = require("./utils/jwt");
 const { lookupBookByIsbn } = require("./utils/isbnLookup");
