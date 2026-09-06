@@ -81,24 +81,24 @@ Instant one-click bookmarking of favorite titles with quick filter isolation.
 
 ```
 Book-Management-System/
-├── Client/
-│   └── Book-management/            # Frontend (React 19 + Vite + Tailwind v4)
-│       ├── public/
-│       │   ├── favicon.svg         # Neubrutalism vector favicon
-│       │   ├── favicon.png         # Raster favicon
-│       │   └── favicon.ico         # Legacy favicon
-│       ├── src/
-│       │   ├── components/         # UI components (Header, BookCard, BookForm, etc.)
-│       │   ├── hooks/              # Custom hooks (useToasts)
-│       │   ├── constants/          # Static genre tags and themes
-│       │   ├── utils/              # Helper utilities
-│       │   ├── App.jsx             # Root application orchestrator
-│       │   ├── main.jsx            # React root entry
-│       │   └── index.css           # Neubrutalist utility CSS rules
-│       ├── axiosInstance.js        # Configured Axios client with dynamic baseURL
-│       ├── vercel.json             # Vercel SPA routing rewrites
-│       ├── .env.example            # Sample client environment variables
-│       └── package.json
+├── Client/                         # Frontend (React 19 + Vite + Tailwind v4)
+│   ├── public/
+│   │   ├── favicon.svg             # Neubrutalism vector favicon
+│   │   ├── favicon.png             # Raster favicon
+│   │   └── favicon.ico             # Legacy favicon
+│   ├── src/
+│   │   ├── components/             # UI components (Header, BookCard, BookForm, etc.)
+│   │   ├── context/                # Auth context (JWT + Google OAuth)
+│   │   ├── hooks/                  # Custom hooks (useToasts)
+│   │   ├── constants/              # Static genre tags and themes
+│   │   ├── utils/                  # Helper utilities (format, csv)
+│   │   ├── App.jsx                 # Root application orchestrator
+│   │   ├── main.jsx                # React root entry
+│   │   └── index.css               # Neubrutalist utility CSS rules
+│   ├── axiosInstance.js            # Configured Axios client with dynamic baseURL
+│   ├── vercel.json                 # Vercel SPA routing rewrites
+│   ├── .env.example                # Sample client environment variables
+│   └── package.json
 │
 ├── Server/                         # Backend (Node.js + Express 5 + MongoDB)
 │   ├── controllers/                # Request handlers (bookController.js)
@@ -200,7 +200,7 @@ In a new terminal window:
 
 ```bash
 # Navigate to Client directory
-cd Client/Book-management
+cd Client
 
 # Install dependencies
 npm install
@@ -234,7 +234,7 @@ The frontend will launch at: `http://localhost:5173`
 
 ### Deploying the Frontend on Vercel
 1. Import your repository on [Vercel](https://vercel.com/).
-2. Set **Root Directory** to `Client/Book-management`.
+2. Set **Root Directory** to `Client`.
 3. Framework Preset: `Vite`.
 4. Add the environment variable:
    - `VITE_API_URL`: `https://book-management-system-m43r.onrender.com` *(without trailing slash)*

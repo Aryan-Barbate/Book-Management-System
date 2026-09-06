@@ -23,15 +23,14 @@ This is a MERN (MongoDB, Express, React, Node.js) stack Book Management System w
   │   ├── package.json       # Backend dependencies
   │   └── .env               # Environment variables
   │
-  └── /Client                # React frontend
-      └── /Book-management   # Vite/React application
-          ├── src/           # Source code
-          │   ├── App.jsx    # Main application component
-          │   ├── main.jsx   # Entry point
-          │   └── index.css  # Global styles
-          ├── index.html     # HTML template
-          ├── package.json   # Frontend dependencies
-          └── vite.config.js # Vite configuration
+  └── /Client                # React frontend (Vite + React)
+      ├── src/               # Source code
+      │   ├── App.jsx        # Main application component
+      │   ├── main.jsx       # Entry point
+      │   └── index.css      # Global styles
+      ├── index.html         # HTML template
+      ├── package.json       # Frontend dependencies
+      └── vite.config.js     # Vite configuration
 ```
 
 ## Development Commands
@@ -52,7 +51,7 @@ npm start
 
 ```bash
 # Navigate to client directory
-cd Client/Book-management
+cd Client
 
 # Install dependencies
 npm install
@@ -111,7 +110,7 @@ Each book document has:
    - Modify Mongoose schema in `/Server/models/` if needed
 
 2. **Frontend**:
-   - Create components in `/Client/Book-management/src/`
+   - Create components in `/Client/src/`
    - Update App.jsx for routing/navigation
    - Use Tailwind CSS for styling
    - Fetch data from `/books` endpoints using fetch/axios
@@ -125,7 +124,7 @@ Each book document has:
 ### Styling Guidelines
 
 - Use Tailwind CSS utility classes for styling
-- Follow existing component patterns in `/Client/Book-management/src/`
+- Follow existing component patterns in `/Client/src/`
 - Maintain responsive design principles
 
 ## Code Quality Guidelines
@@ -180,7 +179,7 @@ PORT=3000
 2. Install dependencies for both server and client:
    ```bash
    npm install
-   cd Client/Book-management
+   cd Client
    npm install
    ```
 3. Set up environment variables in Server/.env
@@ -190,7 +189,7 @@ PORT=3000
    npm start
 
    # In another terminal
-   cd Client/Book-management
+   cd Client
    npm run dev
    ```
 5. Access the application at http://localhost:5173 (frontend) and http://localhost:3000 (backend API)

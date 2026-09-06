@@ -28,7 +28,7 @@ The frontend implements a custom Neubrutalist design language characterized by:
 ## 📂 Directory Structure
 
 ```
-Client/Book-management/
+Client/
 ├── public/
 │   ├── favicon.svg             # Scalable Neubrutalist vector favicon
 │   ├── favicon.png             # Raster 64x64 PNG favicon
@@ -110,7 +110,7 @@ npm run lint
 ## 🌐 Deploying to Vercel
 
 1. **Import Git Repository**: In your [Vercel Dashboard](https://vercel.com/), select your repository.
-2. **Root Directory**: Select `Client/Book-management`.
+2. **Root Directory**: Select `Client`.
 3. **Framework Preset**: `Vite` (automatically detected).
 4. **Build & Output Settings**:
    - Build Command: `npm run build`
