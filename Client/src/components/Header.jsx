@@ -171,13 +171,13 @@ const Header = ({
 
       {/* Hero Banner */}
       {showStats && bookCount !== undefined && totalValue !== undefined && (
-        <div className="nb-card p-6 sm:p-10 relative overflow-hidden bg-[#FFDE59] dark:bg-[#161824] text-black dark:text-white border-3 border-black dark:border-[#3b4366] transition-colors">
-          {/* Playful decorative shape */}
-          <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-[#FF66C4] dark:bg-[#00d9f5]/15 border-4 border-black dark:border-[#3b4366] rounded-full opacity-20 pointer-events-none transform rotate-12 hidden sm:block" />
+        <div className="nb-card p-6 sm:p-10 relative overflow-hidden bg-white dark:bg-[#161824] text-black dark:text-white border-3 border-black dark:border-[#3b4366] transition-colors">
+          {/* Decorative circular element matching design showcase */}
+          <div className="absolute -right-10 -bottom-20 sm:-right-14 sm:-bottom-24 w-52 h-52 sm:w-64 sm:h-64 bg-[#FCE7F3] dark:bg-[#00d9f5]/10 border-4 border-slate-300 dark:border-[#3b4366] rounded-full pointer-events-none" />
 
           <div className="max-w-3xl relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-black dark:bg-[#1f2334] text-white text-xs font-black tracking-wider uppercase mb-4 shadow-[2px_2px_0px_0px_#FFFDF5] dark:shadow-[2px_2px_0px_0px_#000] border border-black dark:border-[#3b4366]">
-              <Zap className="w-4 h-4 text-[#CCFF00] fill-[#CCFF00]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-black dark:bg-[#1f2334] text-white text-xs font-black tracking-wider uppercase mb-4 border border-black dark:border-[#3b4366]">
+              <Zap className="w-3.5 h-3.5 text-[#CCFF00] fill-[#CCFF00]" />
               <span>
                 {isAuthenticated
                   ? `${user?.name.toUpperCase()}'S COMMAND CENTER`
@@ -194,14 +194,14 @@ const Header = ({
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="nb-badge nb-badge-white text-sm py-2 px-4">
+              <div className="nb-badge nb-badge-white text-xs sm:text-sm py-1.5 px-3 flex items-center gap-2">
                 <Library className="w-4 h-4 stroke-2.5" />
                 <span>
                   {bookCount} {bookCount === 1 ? "BOOK" : "BOOKS"} TOTAL
                 </span>
               </div>
 
-              <div className="nb-badge nb-badge-cyan text-sm py-2 px-4">
+              <div className="nb-badge nb-badge-cyan text-xs sm:text-sm py-1.5 px-3 flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-black stroke-2.5" />
                 <span>
                   VALUATION:{" "}
