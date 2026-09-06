@@ -170,6 +170,16 @@ const BookForm = ({
             let cover = info.imageLinks?.thumbnail || info.imageLinks?.small || "";
             if (cover.startsWith("http://")) cover = cover.replace("http://", "https://");
 
+            // Extract tags from Google categories
+            const allRaw = [];
+            (info.categories || []).forEach((c) => {
+              c.split(/[/,&]/).forEach((p) => {
+                const t = p.trim();
+                if (t && t.length > 2 && t.toLowerCase() !== "general") allRaw.push(t);
+              });
+            });
+            const clientTags = Array.from(new Set(allRaw)).slice(0, 8);
+
             data = {
               bookName: info.title || "",
               bookAuthor: info.authors ? info.authors.join(", ") : "",
@@ -177,6 +187,7 @@ const BookForm = ({
               publishDate: info.publishedDate || "",
               pageCount: info.pageCount || 0,
               genre: info.categories ? info.categories[0].split("/")[0].trim() : "Fiction",
+              tags: clientTags,
               coverUrl: cover,
               bookPrice: 14.99,
               isbn: cleanIsbn,
@@ -194,6 +205,14 @@ const BookForm = ({
           const olJson = await olRes.json();
           const olBook = olJson[`ISBN:${cleanIsbn}`];
           if (olBook) {
+            // Extract tags from OpenLibrary subjects
+            const subTags = (olBook.subjects || [])
+              .map((s) => (typeof s === "string" ? s : s.name))
+              .filter((s) => s && !s.includes(":") && !s.includes("=") && s.length > 2 && s.length < 30)
+              .map((s) => s.replace(/\(.*?\)/g, "").trim())
+              .filter(Boolean);
+            const clientTags = Array.from(new Set(subTags)).slice(0, 8);
+
             data = {
               bookName: olBook.title || "",
               bookAuthor: olBook.authors ? olBook.authors.map((a) => a.name).join(", ") : "",
@@ -201,6 +220,7 @@ const BookForm = ({
               publishDate: olBook.publish_date || "",
               pageCount: olBook.number_of_pages || 0,
               genre: olBook.subjects ? olBook.subjects[0].name : "Fiction",
+              tags: clientTags,
               coverUrl: olBook.cover?.large || olBook.cover?.medium || "",
               bookPrice: 15.0,
               isbn: cleanIsbn,
@@ -213,22 +233,33 @@ const BookForm = ({
         throw new Error("No book found for this ISBN. You can enter details manually.");
       }
 
-      // Populate form
-      setFormData((prev) => ({
-        ...prev,
-        bookName: data.bookName || prev.bookName,
-        bookAuthor: data.bookAuthor || prev.bookAuthor,
-        description: data.description || prev.description,
-        publishDate: formatDateForInput(data.publishDate) || prev.publishDate,
-        pageCount: data.pageCount ? String(data.pageCount) : prev.pageCount,
-        coverUrl: data.coverUrl || prev.coverUrl,
-        isbn: cleanIsbn,
-        genre: GENRES.includes(data.genre) ? data.genre : prev.genre,
-        bookPrice: prev.bookPrice || String(data.bookPrice || "14.99"),
-      }));
+      // Populate form with fetched book details, category & tags
+      setFormData((prev) => {
+        const mergedTags = Array.from(
+          new Set([...(prev.tags || []), ...(data.tags || [])])
+        ).slice(0, 10);
+
+        return {
+          ...prev,
+          bookName: data.bookName || prev.bookName,
+          bookAuthor: data.bookAuthor || prev.bookAuthor,
+          description: data.description || prev.description,
+          publishDate: formatDateForInput(data.publishDate) || prev.publishDate,
+          pageCount: data.pageCount ? String(data.pageCount) : prev.pageCount,
+          coverUrl: data.coverUrl || prev.coverUrl,
+          isbn: cleanIsbn,
+          genre: GENRES.includes(data.genre) ? data.genre : prev.genre,
+          tags: mergedTags,
+          bookPrice: prev.bookPrice || String(data.bookPrice || "14.99"),
+        };
+      });
 
       setIsbnQuery(cleanIsbn);
-      addToast?.(`Auto-filled details for "${data.bookName}"!`, "success");
+      const tagCount = data.tags?.length || 0;
+      addToast?.(
+        `Auto-filled details & ${tagCount} tag${tagCount === 1 ? "" : "s"} for "${data.bookName}"!`,
+        "success"
+      );
     } catch (err) {
       addToast?.(err.message || "Failed to find book details.", "error");
     } finally {

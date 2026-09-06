@@ -1,4 +1,95 @@
 /**
+ * Helper to normalize and extract clean tags & primary genre from categories/subjects
+ */
+function extractTagsAndCategories(rawCategories = [], rawSubjects = []) {
+  const allRaw = [];
+
+  // Flatten Google categories (e.g. "Computers / Software Development & Engineering / General")
+  rawCategories.forEach((cat) => {
+    if (typeof cat === "string") {
+      cat.split(/[/,&]/).forEach((part) => {
+        const trimmed = part.trim();
+        if (trimmed) allRaw.push(trimmed);
+      });
+    }
+  });
+
+  // Flatten OpenLibrary subjects
+  rawSubjects.forEach((sub) => {
+    const name = typeof sub === "string" ? sub : sub?.name;
+    if (name && typeof name === "string") {
+      allRaw.push(name.trim());
+    }
+  });
+
+  const stopWords = new Set([
+    "general",
+    "books",
+    "accessible book",
+    "protected daisy",
+    "large type books",
+    "text",
+    "juvenile",
+    "in library",
+    "reading level",
+  ]);
+  const seen = new Set();
+  const cleanTags = [];
+
+  for (const raw of allRaw) {
+    // Skip internal metadata/date codes like nyt:..., award:...
+    if (raw.includes(":") || raw.includes("=")) continue;
+
+    // Clean up parentheses: "Dune (Imaginary place)" -> "Dune"
+    let cleaned = raw.replace(/\(.*?\)/g, "").trim();
+    cleaned = cleaned.replace(/^[#\-_,.]+|[#\-_,.]+$/g, "").trim();
+
+    if (!cleaned || cleaned.length < 2 || cleaned.length > 30) continue;
+    if (stopWords.has(cleaned.toLowerCase())) continue;
+
+    const lower = cleaned.toLowerCase();
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      // Capitalize first letter of each word
+      const titleCased = cleaned
+        .split(" ")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(" ");
+      cleanTags.push(titleCased);
+    }
+    if (cleanTags.length >= 8) break; // Limit to top 8 clean tags
+  }
+
+  // Determine best matching primary genre
+  let detectedGenre = "Fiction";
+  const haystack = allRaw.join(" ").toLowerCase();
+
+  if (haystack.includes("science fiction") || haystack.includes("sci-fi")) detectedGenre = "Sci-Fi";
+  else if (haystack.includes("fantasy")) detectedGenre = "Fantasy";
+  else if (haystack.includes("dystop")) detectedGenre = "Dystopian";
+  else if (haystack.includes("myster") || haystack.includes("thrill") || haystack.includes("crime") || haystack.includes("detective")) detectedGenre = "Mystery";
+  else if (haystack.includes("romance") || haystack.includes("love story")) detectedGenre = "Romance";
+  else if (haystack.includes("classic")) detectedGenre = "Classic";
+  else if (haystack.includes("biograph") || haystack.includes("autobiograph") || haystack.includes("memoir")) detectedGenre = "Biography";
+  else if (haystack.includes("philosoph")) detectedGenre = "Philosophy";
+  else if (
+    haystack.includes("comput") ||
+    haystack.includes("software") ||
+    haystack.includes("programming") ||
+    haystack.includes("coding") ||
+    haystack.includes("technology") ||
+    haystack.includes("non-fiction") ||
+    haystack.includes("business") ||
+    haystack.includes("self-help") ||
+    haystack.includes("psycholog") ||
+    haystack.includes("history") ||
+    haystack.includes("economics")
+  ) detectedGenre = "Non-Fiction";
+
+  return { tags: cleanTags, genre: detectedGenre };
+}
+
+/**
  * Helper to fetch book details from Google Books and OpenLibrary
  */
 async function lookupBookByIsbn(rawIsbn) {
@@ -37,18 +128,8 @@ async function lookupBookByIsbn(rawIsbn) {
           }
         }
 
-        // Map genre / categories
-        let genre = "Fiction";
-        if (info.categories && info.categories.length > 0) {
-          const rawCat = info.categories[0].toLowerCase();
-          if (rawCat.includes("sci") || rawCat.includes("science fiction")) genre = "Sci-Fi";
-          else if (rawCat.includes("dystop")) genre = "Dystopian";
-          else if (rawCat.includes("myster") || rawCat.includes("thrill") || rawCat.includes("crime")) genre = "Mystery";
-          else if (rawCat.includes("roman")) genre = "Romance";
-          else if (rawCat.includes("classic")) genre = "Classic";
-          else if (rawCat.includes("comput") || rawCat.includes("biograph") || rawCat.includes("history") || rawCat.includes("non-fiction") || rawCat.includes("business")) genre = "Non-Fiction";
-          else genre = info.categories[0].split("/")[0].trim() || "Fiction";
-        }
+        // Map genre and extract tags
+        const { tags, genre } = extractTagsAndCategories(info.categories || [], []);
 
         let price = 14.99;
         if (item.saleInfo?.retailPrice?.amount) {
@@ -64,6 +145,8 @@ async function lookupBookByIsbn(rawIsbn) {
           publishDate: info.publishedDate || "",
           pageCount: info.pageCount || 0,
           genre: genre,
+          categories: info.categories || [genre],
+          tags: tags,
           coverUrl: coverUrl,
           bookPrice: price,
           isbn: cleanIsbn,
@@ -93,11 +176,9 @@ async function lookupBookByIsbn(rawIsbn) {
           authors = bookData.authors.map((a) => a.name).join(", ");
         }
 
-        let genre = "Fiction";
-        if (bookData.subjects && bookData.subjects.length > 0) {
-          const sub = bookData.subjects[0].name || "";
-          genre = sub;
-        }
+        // Extract tags and categories from OpenLibrary subjects
+        const subjects = bookData.subjects || [];
+        const { tags, genre } = extractTagsAndCategories([], subjects);
 
         return {
           bookName: bookData.title || "",
@@ -106,6 +187,8 @@ async function lookupBookByIsbn(rawIsbn) {
           publishDate: bookData.publish_date || "",
           pageCount: bookData.number_of_pages || 0,
           genre: genre,
+          categories: subjects.map((s) => s.name || s) || [genre],
+          tags: tags,
           coverUrl: coverUrl,
           bookPrice: 15.0,
           isbn: cleanIsbn,
@@ -120,4 +203,5 @@ async function lookupBookByIsbn(rawIsbn) {
   throw new Error(`No book found for ISBN ${cleanIsbn}. Try entering details manually.`);
 }
 
-module.exports = { lookupBookByIsbn };
+module.exports = { lookupBookByIsbn, extractTagsAndCategories };
+
