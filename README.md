@@ -101,10 +101,18 @@ Real-time calculated analytics dashboard paired with configurable server-side pa
 
 ---
 
+### 8. Overhauled Cyber Dark Theme
+A sleek, modern midnight palette (`#0d0f17` canvas with `#161824` cards, `#3b4366` high-contrast borders, and vivid neon accents) built from the ground up for strain-free nighttime reading and cataloging.
+
+![Cyber Dark Theme](utils/dark-theme-full.png)
+
+---
+
 ## ✨ Key Features (v2.0)
 
 | Feature | Description |
 |---|---|
+| **🏠 Command Center Home Button** | One-click library reset that clears active filters, search queries, and shelf selections, restores full pagination, resets scroll to top, and displays a dynamic notification badge when filters are active. |
 | **🔐 Multi-User Authentication & Tenancy** | Email/password registration and login with JWT, Google OAuth integration, secure password hashing, and user-scoped collections with zero-friction 1-click demo access. |
 | **🎨 Real Cover Art & File Uploads** | High-fidelity cover rendering in grid and list views, image file upload support (Base64), image URL input, and automated cover population from ISBN lookups. |
 | **📱 ISBN Auto-Fill & Barcode Scanner** | Instant metadata lookup from Google Books & OpenLibrary APIs to auto-fill title, author, description, publish date, page count, and genre; plus an in-browser HTML5 camera barcode scanner. |
@@ -113,7 +121,7 @@ Real-time calculated analytics dashboard paired with configurable server-side pa
 | **🔄 CSV, Goodreads & JSON Import/Export** | Export your entire library as CSV or JSON, and import from standard CSVs or Goodreads library export files with intelligent schema mapping. |
 | **📄 Server-Side Pagination** | Backend limit/skip pagination with page number navigation, page size selectors (6, 12, 24, 48), and server-side filtering. |
 | **🎨 Electric Neubrutalism UI** | Heavy 3px solid black borders, hard drop shadows (`shadow-[3px_3px_0px_#000]`), retro color accents (`#FFDE59` Canary, `#00F0FF` Cyan, `#FF54B0` Pink, `#CCFF00` Lime), and tactile hover micro-interactions. |
-| **🌓 Dual Themes: Pop Light & Cyber Dark** | Full theme switching with dynamic `data-theme` document switching and high-contrast color token mapping. |
+| **🌓 Dual Themes: Pop Light & Cyber Dark** | Full theme switching with dynamic `data-theme` document switching, bespoke midnight canvas, neon accents, and high-contrast color token mapping. |
 | **🚀 Cloud Production Ready** | Configured for one-click deployment on **Render** (API backend with self-ping keep-alive) and **Vercel** (SPA frontend). |
 
 ---
@@ -187,7 +195,8 @@ Book-Management-System/
 │   ├── add-book-modal.png          # Add book modal with ISBN auto-fill
 │   ├── books-list-view.png         # Dense horizontal list view
 │   ├── collection-insights.png     # 4-card analytics & pagination controls
-│   └── shelf-filtering.png         # Active shelf filter & match count
+│   ├── shelf-filtering.png         # Active shelf filter & match count
+│   └── dark-theme-full.png         # Full midnight slate Cyber Dark theme
 │
 ├── render.yaml                     # Render Blueprint infrastructure specification
 └── README.md                       # Project root documentation
