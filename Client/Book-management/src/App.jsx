@@ -10,6 +10,8 @@ import "./index.css";
 const App = () => {
   const [books, setBooks] = useState([]);
   const [theme, setTheme] = useState("light");
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const { toasts, addToast, dismissToast } = useToasts();
 
   const handleToggleTheme = useCallback(() => {
@@ -20,23 +22,41 @@ const App = () => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // Fetch books from backend API on mount
-  useEffect(() => {
-    const fetchBooksFromAPI = async () => {
-      try {
-        const response = await baseBookURL.get("/books");
-        if (response.data && Array.isArray(response.data.BookList)) {
-          setBooks(response.data.BookList);
-        }
-      } catch (error) {
-        console.error(
-          "Error fetching books from backend server:",
-          error.message,
-        );
+  // Fetch books from backend API
+  const fetchBooksFromAPI = useCallback(async () => {
+    setIsLoading(true);
+    setFetchError(null);
+    try {
+      const response = await baseBookURL.get("/books");
+      if (response.data && Array.isArray(response.data.BookList)) {
+        setBooks(response.data.BookList);
       }
-    };
-    fetchBooksFromAPI();
+    } catch (error) {
+      console.error("Error fetching books from backend server:", error);
+      let message = error.response?.data?.Message || error.message;
+
+      if (error.code === "ECONNABORTED") {
+        message = "Connection timed out. Render backend may still be spinning up from sleep.";
+      } else if (
+        !error.response &&
+        typeof window !== "undefined" &&
+        window.location.protocol === "https:" &&
+        error.config?.baseURL?.startsWith("http://localhost")
+      ) {
+        message = "Mixed Content Block: Deployed HTTPS frontend cannot reach localhost:3000. Set VITE_API_URL in your Vercel settings to your Render backend URL.";
+      } else if (!error.response) {
+        message = "Could not connect to backend server. The Render service may be starting up (cold start) or CORS is blocking the request.";
+      }
+
+      setFetchError(message);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchBooksFromAPI();
+  }, [fetchBooksFromAPI]);
 
   const handleSaveBook = useCallback(
     async (bookData) => {
@@ -177,6 +197,9 @@ const App = () => {
             element={
               <Home
                 books={books}
+                isLoading={isLoading}
+                fetchError={fetchError}
+                onRetry={fetchBooksFromAPI}
                 onDeleteBook={handleDeleteBook}
                 onToggleFavorite={handleToggleFavorite}
                 theme={theme}

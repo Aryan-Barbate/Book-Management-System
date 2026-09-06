@@ -16,6 +16,9 @@ const sortFns = {
 
 const Home = ({
   books,
+  isLoading,
+  fetchError,
+  onRetry,
   onDeleteBook,
   onToggleFavorite,
   theme,
@@ -78,6 +81,9 @@ const Home = ({
         {/* Book List / Controls */}
         <BookList
           books={filteredAndSortedBooks}
+          isLoading={isLoading}
+          fetchError={fetchError}
+          onRetry={onRetry}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           selectedGenre={selectedGenre}

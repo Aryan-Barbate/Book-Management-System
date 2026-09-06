@@ -1,6 +1,15 @@
+const mongoose = require("mongoose");
 const Book = require("../models/book");
 
+const isDbConnected = () => mongoose.connection.readyState === 1;
+
 const handleAddBookController = async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({
+      Message: "Database is not connected. Please ensure MongoDB Atlas connection string is valid and IP 0.0.0.0/0 is whitelisted.",
+    });
+  }
+
   try {
     const newBook = new Book({
       bookName: req.body.bookName,
@@ -25,6 +34,12 @@ const handleAddBookController = async (req, res) => {
 };
 
 const handleGetAllBookController = async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({
+      Message: "Database is not connected. Please ensure MongoDB Atlas connection string is valid and IP 0.0.0.0/0 is whitelisted.",
+      BookList: [],
+    });
+  }
   try {
     const bookList = await Book.find({});
 
@@ -38,6 +53,11 @@ const handleGetAllBookController = async (req, res) => {
 };
 
 const handleDeleteBookController = async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({
+      Message: "Database is not connected. Please ensure MongoDB Atlas connection string is valid and IP 0.0.0.0/0 is whitelisted.",
+    });
+  }
   try {
     const { id } = req.params;
     const deleteBook = await Book.findByIdAndDelete(id);
@@ -53,6 +73,11 @@ const handleDeleteBookController = async (req, res) => {
 };
 
 const handleUpdateBookController = async (req, res) => {
+  if (!isDbConnected()) {
+    return res.status(503).json({
+      Message: "Database is not connected. Please ensure MongoDB Atlas connection string is valid and IP 0.0.0.0/0 is whitelisted.",
+    });
+  }
   try {
     const { id } = req.params;
     const updateBook = await Book.findByIdAndUpdate(id, req.body, {

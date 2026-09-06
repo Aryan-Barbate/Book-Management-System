@@ -8,11 +8,17 @@ import {
   BookX,
   Heart,
   X,
+  Loader2,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { GENRE_FILTERS, getGenreColor } from "../constants";
 
 const BookList = ({
   books,
+  isLoading,
+  fetchError,
+  onRetry,
   searchQuery,
   setSearchQuery,
   selectedGenre,
@@ -151,8 +157,52 @@ const BookList = ({
         )}
       </div>
 
-      {/* Empty State */}
-      {books.length === 0 && (
+      {/* Loading State */}
+      {isLoading && (
+        <div className="nb-card p-10 text-center my-8 bg-white dark:bg-[#1E1E1E]">
+          <div className="w-16 h-16 rounded-xl bg-[#CCFF00] text-black border-3 border-black flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_0px_#000] animate-spin">
+            <Loader2 className="w-8 h-8 stroke-3" />
+          </div>
+          <h3 className="text-2xl font-black mb-2 uppercase">
+            CONNECTING TO BOOK VAULT...
+          </h3>
+          <p className="text-sm font-bold opacity-80 max-w-md mx-auto mb-2">
+            Fetching books from database. Please wait a moment.
+          </p>
+          <p className="text-xs font-semibold opacity-60 max-w-sm mx-auto">
+            (Render free tier web services take 30–50s to spin up if sleeping)
+          </p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {!isLoading && fetchError && (
+        <div className="nb-card nb-card-pink p-8 sm:p-10 text-center my-8">
+          <div className="w-16 h-16 rounded-xl bg-black text-[#FF4D4D] border-3 border-black flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_0px_#000]">
+            <AlertTriangle className="w-8 h-8 stroke-2.5" />
+          </div>
+          <h3 className="text-2xl font-black mb-2 uppercase">
+            UNABLE TO FETCH BOOKS FROM DATABASE
+          </h3>
+          <p className="text-sm font-extrabold text-black/90 max-w-lg mx-auto mb-4 bg-white/70 dark:bg-black/40 p-3.5 rounded-lg border-2 border-black">
+            {fetchError}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
+            {onRetry && (
+              <button
+                onClick={onRetry}
+                className="nb-btn nb-btn-yellow flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0px_0px_#000]"
+              >
+                <RefreshCw className="w-4 h-4 stroke-2.5" />
+                <span>RETRY CONNECTION</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State (when loaded and no error, but 0 matching books) */}
+      {!isLoading && !fetchError && books.length === 0 && (
         <div className="nb-card nb-card-yellow p-10 text-center my-8">
           <div className="w-16 h-16 rounded-xl bg-black text-[#CCFF00] border-3 border-black flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_0px_#000]">
             <BookX className="w-8 h-8 stroke-2.5" />
@@ -171,7 +221,7 @@ const BookList = ({
       )}
 
       {/* Book Grid / List */}
-      {books.length > 0 && (
+      {!isLoading && !fetchError && books.length > 0 && (
         <div
           className={
             viewMode === "grid"
@@ -181,7 +231,7 @@ const BookList = ({
         >
           {books.map((book) => (
             <BookCard
-              key={book.id}
+              key={book._id || book.id}
               book={book}
               viewMode={viewMode}
               onDelete={onDelete}

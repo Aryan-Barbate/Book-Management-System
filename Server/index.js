@@ -7,6 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const mongoose = require("mongoose");
 const router = require("./routes/bookRouter");
 const { startKeepAlive } = require("./keepAlive");
 
@@ -30,6 +31,35 @@ app.get("/ping", (req, res) => {
     message: "pong",
     timestamp: new Date().toISOString(),
     uptime: Math.floor(process.uptime()),
+  });
+});
+
+// Health check with MongoDB connection status diagnostics
+app.get("/health", (req, res) => {
+  const readyState = mongoose.connection.readyState;
+  const states = {
+    0: "disconnected",
+    1: "connected",
+    2: "connecting",
+    3: "disconnecting",
+  };
+  const isConnected = readyState === 1;
+
+  res.set({
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+  });
+
+  res.status(isConnected ? 200 : 503).json({
+    status: isConnected ? "ok" : "degraded",
+    database: {
+      status: states[readyState] || "unknown",
+      readyState: readyState,
+      dbName: mongoose.connection.name || process.env.DB_NAME || "unknown",
+    },
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
   });
 });
 
