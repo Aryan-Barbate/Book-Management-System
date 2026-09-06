@@ -29,82 +29,176 @@ Whether cataloging physical volumes via **HTML5 camera barcode scanning**, synch
 
 ## 📸 Visual Showcase
 
-### 1. Library Command Center & Hero Banner
-High-contrast hero banner rendering real-time portfolio metrics, valuation counter, instant full-text search, and quick shelf navigation.
+<div align="center">
+  <a href="#-visual-showcase">
+    <img src="utils/dashboard-hero.png" width="100%" alt="Book Vault Command Center & Hero Banner" style="max-width: 1100px; border-radius: 12px;" />
+  </a>
+  <p><em><b>Library Command Center & Hero Banner</b> — Real-time collection metrics, portfolio valuation, and one-click library reset.</em></p>
+</div>
 
-![Dashboard Hero & Command Center](utils/dashboard-hero.png)
+<br/>
 
----
+### 1. Interactive Browsing: Grid View vs. Compact List View
 
-### 2. Interactive Browsing: Grid View vs. Compact List View
-Toggle seamlessly between an expansive, visual **Book Card Grid** and a dense, data-rich **Compact List View** with single-click actions.
+Toggle seamlessly between an expansive, visual **Book Card Grid** and a dense, data-rich **Compact List View** with a single click.
 
-<p align="center">
-  <img src="utils/books-grid-view.png" width="49%" alt="Interactive Books Grid View" />
-  <img src="utils/books-list-view.png" width="49%" alt="Compact Books List View" />
-</p>
+<table width="100%">
+  <thead>
+    <tr>
+      <th width="50%" align="center">🎨 Visual Book Grid</th>
+      <th width="50%" align="center">📋 Compact List View</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td valign="top" align="center">
+        <a href="utils/books-grid-view.png">
+          <img src="utils/books-grid-view.png" width="100%" alt="Visual Book Grid" style="border-radius: 8px;" />
+        </a>
+        <br/><br/>
+        <p align="left">
+          <b>Vibrant Card Layout</b>: Live star ratings, high-contrast genre pills, cover art, quick favorites toggle, and action buttons.
+        </p>
+      </td>
+      <td valign="top" align="center">
+        <a href="utils/books-list-view.png">
+          <img src="utils/books-list-view.png" width="100%" alt="Compact List View" style="border-radius: 8px;" />
+        </a>
+        <br/><br/>
+        <p align="left">
+          <b>High-Density Reading List</b>: Horizontal entries with cover thumbnails, publication age badges (<i>"101 yrs old"</i>, <i>"New Release"</i>), prices, tags, and direct journal triggers.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-* **Grid View**: Vibrant book cards with live star ratings, genre tags, cover art, quick favorites toggle, and action buttons.
-* **List View**: Dense horizontal entries displaying cover thumbnails, publication age badges (*"11 yrs old"*, *"New Release"*), prices, tags, and direct journal triggers.
+<br/>
 
----
+### 2. Custom Shelves & Dynamic Multi-Filtering
 
-### 3. Custom Shelves & Dynamic Multi-Filtering
-Organize books into default shelves (*"Want to Read"*, *"Currently Reading"*, *"Read"*, *"Favorites"*) or create custom user shelves. Filter instantly by genre pills and shelf categories with live match counters and single-click filter resets.
+Organize books into default shelves (*"Want to Read"*, *"Currently Reading"*, *"Read"*, *"Favorites"*) or custom user shelves. Filter instantly by genre pills and shelf categories with live match counters and single-click filter resets.
 
-![Shelf Filtering & Collections](utils/shelf-filtering.png)
+<div align="center">
+  <a href="utils/shelf-filtering.png">
+    <img src="utils/shelf-filtering.png" width="92%" alt="Shelf Filtering and Search Bar" style="max-width: 960px; border-radius: 8px;" />
+  </a>
+</div>
 
----
+<br/>
 
-### 4. Book Ingestion & Auto-Fill: Add vs. Edit Modals
-Streamlined data entry with automated ISBN lookups, camera barcode scanning, and live OpenLibrary/Google Books cover art retrieval.
+### 3. Book Ingestion & Metadata Editor: Add vs. Edit
 
-<p align="center">
-  <img src="utils/add-book-modal.png" width="49%" alt="Add Book Modal" />
-  <img src="utils/edit-book-modal.png" width="49%" alt="Edit Book Modal" />
-</p>
+Streamlined data entry with automated ISBN lookups, camera barcode scanning, and live OpenLibrary / Google Books cover art retrieval.
 
-* **Add Book Modal**: Auto-populate title, author, description, page count, and cover preview from an ISBN scan or input.
-* **Edit Book Modal**: Update shelf placements, custom tags, cover art URLs, Base64 uploads, ratings, and valuation prices.
+<table width="100%">
+  <thead>
+    <tr>
+      <th width="50%" align="center">➕ Add Book & ISBN Lookup</th>
+      <th width="50%" align="center">✏️ Metadata & Shelf Editor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td valign="top" align="center">
+        <a href="utils/add-book-modal.png">
+          <img src="utils/add-book-modal.png" width="400" alt="Add Book Modal" style="max-width: 90%; border-radius: 8px;" />
+        </a>
+        <br/><br/>
+        <p align="left">
+          <b>Zero-Friction Ingestion</b>: Auto-populate title, author, description, page count, and cover preview from an ISBN scan, camera detection, or local file upload.
+        </p>
+      </td>
+      <td valign="top" align="center">
+        <a href="utils/edit-book-modal.png">
+          <img src="utils/edit-book-modal.png" width="400" alt="Edit Book Modal" style="max-width: 90%; border-radius: 8px;" />
+        </a>
+        <br/><br/>
+        <p align="left">
+          <b>Field Control</b>: Reassign shelves, update star ratings, modify custom tag chips, record valuation prices, and persist private study notes.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
----
+<br/>
 
-### 5. Quotes Journal & Private Study Notes
+### 4. Quotes Journal & Private Study Notes
+
 Preserve your favorite excerpts, memorable passages, page markers, and personal reflections for each volume, backed by a dedicated private notes tab.
 
-![Reading Journal & Quotes Modal](utils/reading-journal-modal.png)
+<div align="center">
+  <a href="utils/reading-journal-modal.png">
+    <img src="utils/reading-journal-modal.png" width="85%" alt="Reading Journal and Quotes Modal" style="max-width: 880px; border-radius: 8px;" />
+  </a>
+</div>
 
----
+<br/>
 
-### 6. Data Portability & Multi-User Authentication
-Seamless data migration paired with flexible authentication options for personal privacy and collaborative demoing.
+### 5. Data Portability & Multi-User Authentication
 
-<p align="center">
-  <img src="utils/import-export-modal.png" width="49%" alt="Import and Export Modal" />
-  <img src="utils/auth-modal.png" width="49%" alt="Authentication Modal" />
-</p>
+Seamless data migration paired with flexible authentication options for personal privacy and instant collaborative demoing.
 
-* **Data Portability**: Lossless **JSON Data Vault** export, **CSV Spreadsheet** download for Excel/Notion, and **Goodreads / CSV Import** with automatic schema mapping.
-* **Authentication**: Multi-tier login supporting **1-Click Instant Demo Login**, **Google OAuth**, and secure **Email / Password** registration with JWT tokens.
+<table width="100%">
+  <thead>
+    <tr>
+      <th width="52%" align="center">📦 Data Portability (CSV & JSON)</th>
+      <th width="48%" align="center">🔐 Multi-Tier Authentication</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td valign="middle" align="center">
+        <a href="utils/import-export-modal.png">
+          <img src="utils/import-export-modal.png" width="440" alt="Import and Export Modal" style="max-width: 95%; border-radius: 8px;" />
+        </a>
+        <br/><br/>
+        <p align="left">
+          <b>Universal Migration</b>: Lossless <b>JSON Data Vault</b> export, <b>CSV Spreadsheet</b> download for Excel/Notion, and <b>Goodreads / CSV Import</b> with automatic schema mapping.
+        </p>
+      </td>
+      <td valign="middle" align="center">
+        <a href="utils/auth-modal.png">
+          <img src="utils/auth-modal.png" width="360" alt="Authentication Modal" style="max-width: 90%; border-radius: 8px;" />
+        </a>
+        <br/><br/>
+        <p align="left">
+          <b>Instant Access</b>: <b>1-Click Instant Demo Login</b> for zero-friction previews, <b>Google OAuth</b>, and secure <b>Email / Password</b> registration with JWT tokens.
+        </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
----
+<br/>
 
-### 7. Collection Insights & Server-Side Pagination
+### 6. Collection Insights & Valuation Analytics
+
 Real-time calculated analytics dashboard paired with configurable server-side pagination (6, 12, 24, 48 items per page).
 
-![Collection Insights & Pagination](utils/collection-insights.png)
+<div align="center">
+  <a href="utils/collection-insights.png">
+    <img src="utils/collection-insights.png" width="92%" alt="Collection Insights Dashboard" style="max-width: 960px; border-radius: 8px;" />
+  </a>
+</div>
 
 * **Collection Size**: Total volume count and read progress tracker.
 * **Valuation Total**: Cumulative portfolio value and average price per book.
-* **Top Category**: Automatically calculated dominant genre in your library.
+* **Top Category**: Automatically calculated dominant genre across your library.
 * **Saved Quotes**: Total journal highlights and starred favorite titles.
 
----
+<br/>
 
-### 8. Overhauled Cyber Dark Theme
+### 7. Overhauled Cyber Dark Theme (Midnight Palette)
+
 A sleek, modern midnight palette (`#0d0f17` canvas with `#161824` cards, `#3b4366` high-contrast borders, and vivid neon accents) built from the ground up for strain-free nighttime reading and cataloging.
 
-![Cyber Dark Theme](utils/dark-theme-full.png)
+<div align="center">
+  <a href="utils/dark-theme-full.png">
+    <img src="utils/dark-theme-full.png" width="95%" alt="Cyber Dark Mode Showcase" style="max-width: 1050px; border-radius: 12px;" />
+  </a>
+</div>
 
 ---
 
