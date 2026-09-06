@@ -1,13 +1,16 @@
-# ⚙️ Book Vault — Express & MongoDB Backend API
+# ⚙️ Book Vault — Express 5 & MongoDB Backend API
 
 <div align="center">
 
 ![NodeJS](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-5.2-000000?style=for-the-badge&logo=express&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB_Atlas-9.8-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-Secure-black?style=for-the-badge&logo=jsonwebtokens)
 ![Render](https://img.shields.io/badge/Deployed_on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)
 
 **The RESTful API service powering Book Vault, built with Node.js, Express 5, and Mongoose for MongoDB Atlas.**
+
+[Architecture](#-architecture-overview) • [Database Schemas](#-database-schemas) • [Keep-Alive Engine](#-keep-alive-engine-render-free-tier) • [API Reference](#-rest-api-reference) • [Deployment](#-cloud-deployment-on-render)
 
 </div>
 
@@ -18,111 +21,189 @@
 ```
 Server/
 ├── controllers/
-│   └── bookController.js       # CRUD business logic and request handlers
+│   ├── authController.js       # Authentication handlers (Register, Login, Google OAuth, Demo)
+│   └── bookController.js       # Books CRUD, ISBN lookup, pagination, quotes & notes
+│
+├── middleware/
+│   └── auth.js                 # JWT Bearer token authentication & route protection
 │
 ├── models/
-│   └── book.js                 # Mongoose document schema definition
+│   ├── book.js                 # Mongoose schema for book records & reading journals
+│   └── user.js                 # Mongoose schema for user profiles & custom shelves
 │
 ├── routes/
-│   └── bookRouter.js           # Express route definitions for /books
+│   ├── authRouter.js           # Route definitions for /auth endpoints
+│   └── bookRouter.js           # Route definitions for /books endpoints
 │
-├── database.js                 # Asynchronous MongoDB connection manager
-├── index.js                    # Server setup, middleware, route mounting & PORT binding
-├── .env.example                # Sample environment configuration
-└── package.json                # Dependencies and production run scripts
+├── database.js                 # Resilient MongoDB Atlas connection manager with retry logic
+├── keepAlive.js                # Self-ping keep-alive service for Render free-tier sleep prevention
+├── index.js                    # Express app initialization, middleware pipeline & PORT listener
+├── seed.js                     # Sample library seeder for quick database bootstrapping
+├── .env.example                # Sample environment variable template
+└── package.json                # Dependencies and scripts
 ```
 
 ---
 
-## 🗄️ Database Schema
+## 🗄️ Database Schemas
 
-Books are modeled using Mongoose in [`models/book.js`](models/book.js):
+### 1. Book Schema (`models/book.js`)
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `bookName` | `String` | Yes | — | Title of the book |
-| `bookAuthor` | `String` | Yes | — | Author name |
-| `bookPrice` | `Number` | Yes | — | Retail or valuation price (USD) |
+| `bookName` | `String` | **Yes** | — | Title of the volume |
+| `bookAuthor` | `String` | **Yes** | — | Author name |
+| `bookPrice` | `Number` | **Yes** | `0` | Valuation price (USD) |
 | `publishDate` | `Date` | No | — | Date of publication |
-| `genre` | `String` | No | `"General"` | Literature category (e.g., Fiction, Sci-Fi, Mystery) |
-| `rating` | `Number` | No | `5` | User star rating from 1 to 5 |
-| `description` | `String` | No | `""` | Brief summary, synopsis, or user notes |
-| `isFavorite` | `Boolean` | No | `false` | Bookmark status |
+| `genre` | `String` | No | `"General"` | Literature category (Fiction, Sci-Fi, etc.) |
+| `rating` | `Number` | No | `5` | User star rating (1 to 5) |
+| `description` | `String` | No | `""` | Synopsis or book summary |
+| `coverUrl` | `String` | No | `""` | Cover image URL or Base64 data string |
+| `isbn` | `String` | No | `""` | 10 or 13 digit ISBN number |
+| `pageCount` | `Number` | No | `0` | Total number of pages |
+| `shelf` | `String` | No | `"Want to Read"` | Active shelf (*"Want to Read"*, *"Currently Reading"*, *"Read"*, *"Favorites"*, etc.) |
+| `tags` | `[String]` | No | `[]` | Freeform categorization chips |
+| `isFavorite` | `Boolean` | No | `false` | Favorite status indicator |
+| `quotes` | `[Quote]` | No | `[]` | Subdocuments: `{ quote, page, note, createdAt }` |
+| `notes` | `String` | No | `""` | Private study and review notes |
+| `user` | `ObjectId` | No | `null` | Reference to `User` model (for multi-tenant collections) |
+
+### 2. User Schema (`models/user.js`)
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | `String` | **Yes** | Display name |
+| `email` | `String` | **Yes** | Unique email address |
+| `password` | `String` | Conditional | Bcrypt-hashed password (optional for Google OAuth users) |
+| `googleId` | `String` | No | Google profile subject ID |
+| `avatar` | `String` | No | Profile picture URL |
+| `customShelves`| `[String]` | No | User-created custom shelves (e.g. `["Summer 2026", "Tech"]`) |
+
+---
+
+## ⚡ Keep-Alive Engine (Render Free Tier)
+
+Render's free web services automatically spin down after 15 minutes of HTTP inactivity, incurring a 30-50 second cold start on the next request.
+
+Book Vault implements a multi-layer keep-alive solution:
+
+1. **Lightweight `/ping` Endpoint**:
+   - Responds to both `GET /ping` and `HEAD /ping`.
+   - Bypasses the database completely for sub-millisecond response times.
+   - Sends `Cache-Control: no-store, no-cache, must-revalidate` headers.
+2. **Self-Pinging Background Service ([`keepAlive.js`](keepAlive.js))**:
+   - In production environments with `RENDER_EXTERNAL_URL` set, the server automatically fires an HTTP request to `RENDER_EXTERNAL_URL/ping` every 14 minutes.
+3. **External Uptime Monitoring**:
+   - You can also configure a free external probe via [cron-job.org](https://cron-job.org/) or [UptimeRobot](https://uptimerobot.com/) targeting `/ping` every 10–14 minutes for 100% continuous uptime.
 
 ---
 
 ## 📡 REST API Reference
 
-All endpoints return JSON responses.
+### Health & Keep-Alive
 
-### 1. Health Check
-```http
-GET /
-```
-**Response (`200 OK`)**:
-```json
-{
-  "status": "ok",
-  "message": "Book Management API is running"
-}
-```
-
----
-
-### 2. Dedicated Ping / Keep-Alive (Render & Monitors)
 ```http
 GET /ping
+HEAD /ping
 ```
-*(Also supports `HEAD /ping` for low-bandwidth uptime probes)*
-
 **Response (`200 OK`)**:
 ```json
 {
   "status": "ok",
   "message": "pong",
-  "timestamp": "2026-09-06T03:45:00.000Z",
-  "uptime": 1248
+  "timestamp": "2026-09-06T10:45:00.000Z",
+  "uptime": 1420
 }
 ```
 
-> **Why a dedicated endpoint?**  
-> Unlike business endpoints, `/ping` does zero database queries, consumes virtually no CPU/RAM, and sends `Cache-Control: no-cache` headers so CDN/reverse proxies won't cache it.
-
 ---
 
-### 3. Get All Books
+### Authentication Routes (`/auth`)
+
+#### 1. Register User
 ```http
-GET /books
+POST /auth/register
+Content-Type: application/json
+
+{
+  "name": "Alex Reader",
+  "email": "alex@bookvault.io",
+  "password": "SecurePassword123"
+}
+```
+**Response (`201 Created`)**:
+```json
+{
+  "message": "User registered successfully",
+  "token": "eyJhbGciOi...",
+  "user": { "id": "...", "name": "Alex Reader", "email": "alex@bookvault.io" }
+}
+```
+
+#### 2. User Login
+```http
+POST /auth/login
+Content-Type: application/json
+
+{
+  "email": "alex@bookvault.io",
+  "password": "SecurePassword123"
+}
 ```
 **Response (`200 OK`)**:
 ```json
 {
-  "Message": "Book Details retrieved successfully",
-  "BookList": [
-    {
-      "_id": "6648f8c2b53f7c0012345678",
-      "bookName": "The Great Gatsby",
-      "bookAuthor": "F. Scott Fitzgerald",
-      "bookPrice": 14.99,
-      "publishDate": "1925-04-10T00:00:00.000Z",
-      "genre": "Classic",
-      "rating": 5,
-      "description": "A portrait of the Jazz Age.",
-      "isFavorite": true
-    }
-  ]
+  "message": "Login successful",
+  "token": "eyJhbGciOi...",
+  "user": { ... }
+}
+```
+
+#### 3. Instant 1-Click Demo Login
+```http
+POST /auth/demo
+```
+**Response (`200 OK`)**: Logs into the public demo user account with sample books and shelves.
+
+#### 4. Update Custom Shelves
+```http
+PUT /auth/shelves
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "customShelves": ["Want to Read", "Currently Reading", "Read", "Favorites", "Summer 2026"]
 }
 ```
 
 ---
 
-### 4. Create a Book
+### Book Routes (`/books`)
+
+#### 1. Get Paginated Books (With Filters & Search)
+```http
+GET /books?page=1&limit=12&search=gatsby&genre=Classic&shelf=Read&sortBy=bookName&order=asc
+```
+**Response (`200 OK`)**:
+```json
+{
+  "Message": "Books retrieved successfully",
+  "BookList": [ ... ],
+  "pagination": {
+    "totalBooks": 24,
+    "page": 1,
+    "limit": 12,
+    "totalPages": 2
+  }
+}
+```
+
+#### 2. Create Book
 ```http
 POST /books
+Authorization: Bearer <token> (optional)
 Content-Type: application/json
-```
-**Request Body**:
-```json
+
 {
   "bookName": "Clean Code",
   "bookAuthor": "Robert C. Martin",
@@ -130,126 +211,114 @@ Content-Type: application/json
   "publishDate": "2008-08-01",
   "genre": "Non-Fiction",
   "rating": 5,
-  "description": "A Handbook of Agile Software Craftsmanship",
-  "isFavorite": false
-}
-```
-**Response (`201 Created`)**:
-```json
-{
-  "Message": "Book added successfully!",
-  "data": { ... }
+  "shelf": "Read",
+  "description": "A handbook of agile software craftsmanship.",
+  "coverUrl": "https://covers.openlibrary.org/b/id/123456-L.jpg"
 }
 ```
 
----
-
-### 5. Update a Book
+#### 3. Bulk Import (CSV / Goodreads)
 ```http
-PUT /books/:id
+POST /books/import
+Authorization: Bearer <token>
 Content-Type: application/json
-```
-**Request Body**:
-```json
+
 {
-  "bookPrice": 29.99,
-  "rating": 4,
-  "isFavorite": true
-}
-```
-**Response (`200 OK`)**:
-```json
-{
-  "Message": "Book updated successfully!",
-  "data": { ... }
+  "books": [
+    { "bookName": "1984", "bookAuthor": "George Orwell", "bookPrice": 12.99, "genre": "Dystopian" }
+  ]
 }
 ```
 
----
-
-### 6. Delete a Book
+#### 4. ISBN Lookup
 ```http
-DELETE /books/:id
+GET /books/lookup/9780143127741
 ```
-**Response (`200 OK`)**:
-```json
+Queries Google Books and OpenLibrary to auto-resolve book metadata (title, author, publisher, description, cover art, page count, and genre).
+
+#### 5. Quotes & Reading Journal
+```http
+POST /books/:id/quotes
+Content-Type: application/json
+
 {
-  "Message": "Book deleted successfully"
+  "quote": "The body keeps the score: if memory of trauma is encoded in the visceral...",
+  "page": 42,
+  "note": "Crucial concept regarding somatic memory storage."
+}
+```
+
+```http
+DELETE /books/:id/quotes/:quoteId
+```
+
+#### 6. Private Study Notes
+```http
+PUT /books/:id/notes
+Content-Type: application/json
+
+{
+  "notes": "Chapter 4 takeaways: Neuroplasticity and body awareness therapies."
 }
 ```
 
 ---
 
-## ⚙️ Environment Variables
+## 🚀 Getting Started
 
-Create a `.env` file inside this `Server/` directory (see [`.env.example`](.env.example)):
-
-```env
-# Port for local server (defaults to 3000 if omitted)
-PORT=3000
-
-# MongoDB connection string (Atlas or local)
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/?retryWrites=true&w=majority
-
-# Database name
-DB_NAME=Book-Management
-```
-
----
-
-## 🚀 Available Scripts
+### Local Setup
 
 ```bash
+# Navigate to Server directory
+cd Server
+
 # Install dependencies
 npm install
 
-# Start production server
-npm start
+# Create environment file
+cp .env.example .env
+```
 
-# Start development server with live reload (nodemon)
+Configure `Server/.env`:
+```env
+PORT=3000
+MONGODB_URI=your_mongodb_connection_string
+DB_NAME=Book-Management
+JWT_SECRET=your_jwt_secret_key
+RENDER_EXTERNAL_URL=http://localhost:3000
+```
+
+Start the service:
+```bash
+# Development with live reloading
 npm run dev
+
+# Production
+npm start
+```
+
+### Seeding Sample Data
+
+To populate the database with a rich set of starter books, covers, shelves, and quotes:
+```bash
+node seed.js
 ```
 
 ---
 
-## 🌐 Deploying to Render
+## 🌐 Cloud Deployment on Render
 
-This service is pre-configured for Render using the root [`render.yaml`](../render.yaml) Blueprint or manual configuration:
-
-1. **Create Web Service**: On [Render Dashboard](https://dashboard.render.com/), choose your GitHub repository.
-2. **Settings**:
+1. Create a **Web Service** on [Render](https://dashboard.render.com/).
+2. Connect your GitHub repository.
+3. Configure the service:
    - **Root Directory**: `Server`
    - **Environment**: `Node`
    - **Build Command**: `npm install`
    - **Start Command**: `npm start`
-   - **Plan**: `Free`
-3. **Environment Variables**:
-   - `MONGODB_URI`: *Your MongoDB connection URI*
+   - **Health Check Path**: `/ping`
+4. Define Environment Variables:
+   - `MONGODB_URI`: *Your MongoDB connection string*
    - `DB_NAME`: `Book-Management`
-4. **Health Check Path**: Set to `/ping` (automatically defined in `render.yaml`).
-5. **Network Access**: Ensure your MongoDB Atlas cluster allows inbound connections from anywhere (`0.0.0.0/0`).
-
----
-
-### ⏱️ Keeping Render Active 24/7 (Preventing Free-Tier Spin Down)
-
-Render's Free instance tier spins down (sleeps) after **15 minutes** of inbound HTTP inactivity. Cold starts can take 50+ seconds.
-
-To keep the service running and responsive at all times:
-
-#### Option 1: External Uptime Monitor (Recommended — 100% Reliable)
-External pings are the industry best practice because they wake up sleeping services even after crashes or redeploys:
-1. Create a free account at [cron-job.org](https://cron-job.org/) or [UptimeRobot](https://uptimerobot.com/).
-2. Create a new monitor / cron job:
-   - **URL**: `https://<your-service-name>.onrender.com/ping`
-   - **HTTP Method**: `GET` or `HEAD`
-   - **Schedule / Interval**: Every **10 to 14 minutes** (Render sleeps at 15 min).
-3. The lightweight `/ping` endpoint responds in milliseconds with `200 OK`, without querying the database or consuming connection pools.
-
-#### Option 2: Automated Self-Ping (Built-in)
-The server includes an automated keep-alive utility (`keepAlive.js`):
-- When deployed on Render, Render automatically populates the `RENDER_EXTERNAL_URL` environment variable.
-- The server will automatically issue a lightweight ping to `${RENDER_EXTERNAL_URL}/ping` every **14 minutes** to prevent sleep.
-- To disable: set `ENABLE_KEEP_ALIVE=false` in Render environment variables.
-- To customize interval: set `KEEP_ALIVE_INTERVAL_MINUTES=14`.
-
+   - `JWT_SECRET`: *A secure random string*
+   - `RENDER_EXTERNAL_URL`: `https://your-service-name.onrender.com`
+5. Deploy service.
