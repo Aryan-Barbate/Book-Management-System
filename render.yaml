@@ -6,6 +6,7 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /ping
     envVars:
       - key: PORT
         value: 10000

@@ -65,13 +65,16 @@ npm run build
 ```
 
 ### API Endpoints
-
-All book-related endpoints are prefixed with `/books`:
-
-- `GET /books` - Retrieve all books
-- `POST /books` - Create a new book
-- `PUT /books/:id` - Update a book by ID
-- `DELETE /books/:id` - Delete a book by ID
+ 
+ - `GET /` - Root API health / status check
+ - `GET /ping` - Dedicated lightweight keep-alive & uptime ping (Render keep-awake, zero DB load, cache-disabled)
+ 
+ All book-related endpoints are prefixed with `/books`:
+ 
+ - `GET /books` - Retrieve all books
+ - `POST /books` - Create a new book
+ - `PUT /books/:id` - Update a book by ID
+ - `DELETE /books/:id` - Delete a book by ID
 
 ## Book Model Schema
 

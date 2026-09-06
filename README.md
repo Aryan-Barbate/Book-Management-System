@@ -223,10 +223,12 @@ The frontend will launch at: `http://localhost:5173`
 1. Create a new **Web Service** on [Render](https://dashboard.render.com/) connected to your repo.
 2. Set **Root Directory** to `Server`.
 3. Set **Build Command** to `npm install` and **Start Command** to `npm start`.
-4. Add the environment variables:
+4. Set **Health Check Path** to `/ping` (or deploy with the included [`render.yaml`](render.yaml) Blueprint).
+5. Add the environment variables:
    - `MONGODB_URI`: *Your MongoDB connection string*
    - `DB_NAME`: `Book-Management`
-5. Note your live backend URL (e.g., `https://book-management-api.onrender.com`).
+6. Note your live backend URL (e.g., `https://book-management-api.onrender.com`).
+7. **Keep Active 24/7 (Prevent Sleep)**: Render Free tier spins down after 15 minutes of inactivity. The backend automatically pings itself via `RENDER_EXTERNAL_URL/ping` every 14 minutes. For 100% reliability, you can also add a free ping monitor on [cron-job.org](https://cron-job.org/) or [UptimeRobot](https://uptimerobot.com/) targeting `https://<your-backend>.onrender.com/ping` every 10–14 minutes.
 
 ### Deploying the Frontend on Vercel
 1. Import your repository on [Vercel](https://vercel.com/).
@@ -244,7 +246,8 @@ All book resource routes are accessible at `/books`:
 
 | Method | Endpoint | Description | Payload Sample |
 |---|---|---|---|
-| `GET` | `/` | API Health Check | `{"status":"ok"}` |
+| `GET` | `/` | API Status Landing | `{"status":"ok"}` |
+| `GET` | `/ping` | Dedicated Keep-Alive / Uptime Probe (Zero DB overhead, no-cache) | `{"status":"ok","message":"pong","timestamp":"...","uptime":120}` |
 | `GET` | `/books` | Retrieve all books | None |
 | `POST` | `/books` | Create a new book entry | `{ "bookName": "...", "bookAuthor": "...", "bookPrice": 19.99, ... }` |
 | `PUT` | `/books/:id` | Update an existing book | `{ "bookPrice": 24.99, "isFavorite": true }` |

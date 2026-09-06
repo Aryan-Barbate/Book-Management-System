@@ -69,7 +69,28 @@ GET /
 
 ---
 
-### 2. Get All Books
+### 2. Dedicated Ping / Keep-Alive (Render & Monitors)
+```http
+GET /ping
+```
+*(Also supports `HEAD /ping` for low-bandwidth uptime probes)*
+
+**Response (`200 OK`)**:
+```json
+{
+  "status": "ok",
+  "message": "pong",
+  "timestamp": "2026-09-06T03:45:00.000Z",
+  "uptime": 1248
+}
+```
+
+> **Why a dedicated endpoint?**  
+> Unlike business endpoints, `/ping` does zero database queries, consumes virtually no CPU/RAM, and sends `Cache-Control: no-cache` headers so CDN/reverse proxies won't cache it.
+
+---
+
+### 3. Get All Books
 ```http
 GET /books
 ```
@@ -95,7 +116,7 @@ GET /books
 
 ---
 
-### 3. Create a Book
+### 4. Create a Book
 ```http
 POST /books
 Content-Type: application/json
@@ -123,7 +144,7 @@ Content-Type: application/json
 
 ---
 
-### 4. Update a Book
+### 5. Update a Book
 ```http
 PUT /books/:id
 Content-Type: application/json
@@ -146,7 +167,7 @@ Content-Type: application/json
 
 ---
 
-### 5. Delete a Book
+### 6. Delete a Book
 ```http
 DELETE /books/:id
 ```
@@ -205,4 +226,30 @@ This service is pre-configured for Render using the root [`render.yaml`](../rend
 3. **Environment Variables**:
    - `MONGODB_URI`: *Your MongoDB connection URI*
    - `DB_NAME`: `Book-Management`
-4. **Network Access**: Ensure your MongoDB Atlas cluster allows inbound connections from anywhere (`0.0.0.0/0`).
+4. **Health Check Path**: Set to `/ping` (automatically defined in `render.yaml`).
+5. **Network Access**: Ensure your MongoDB Atlas cluster allows inbound connections from anywhere (`0.0.0.0/0`).
+
+---
+
+### ⏱️ Keeping Render Active 24/7 (Preventing Free-Tier Spin Down)
+
+Render's Free instance tier spins down (sleeps) after **15 minutes** of inbound HTTP inactivity. Cold starts can take 50+ seconds.
+
+To keep the service running and responsive at all times:
+
+#### Option 1: External Uptime Monitor (Recommended — 100% Reliable)
+External pings are the industry best practice because they wake up sleeping services even after crashes or redeploys:
+1. Create a free account at [cron-job.org](https://cron-job.org/) or [UptimeRobot](https://uptimerobot.com/).
+2. Create a new monitor / cron job:
+   - **URL**: `https://<your-service-name>.onrender.com/ping`
+   - **HTTP Method**: `GET` or `HEAD`
+   - **Schedule / Interval**: Every **10 to 14 minutes** (Render sleeps at 15 min).
+3. The lightweight `/ping` endpoint responds in milliseconds with `200 OK`, without querying the database or consuming connection pools.
+
+#### Option 2: Automated Self-Ping (Built-in)
+The server includes an automated keep-alive utility (`keepAlive.js`):
+- When deployed on Render, Render automatically populates the `RENDER_EXTERNAL_URL` environment variable.
+- The server will automatically issue a lightweight ping to `${RENDER_EXTERNAL_URL}/ping` every **14 minutes** to prevent sleep.
+- To disable: set `ENABLE_KEEP_ALIVE=false` in Render environment variables.
+- To customize interval: set `KEEP_ALIVE_INTERVAL_MINUTES=14`.
+
