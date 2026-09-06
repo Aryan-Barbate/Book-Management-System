@@ -1,18 +1,29 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/Home";
 import BookForm from "./components/BookForm";
 import ToastNotification from "./components/ToastNotification";
+import AuthModal from "./components/AuthModal";
 import { useToasts } from "./hooks/useToasts";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { baseBookURL } from "../axiosInstance";
 import "./index.css";
 
-const App = () => {
+const MainApp = () => {
   const [books, setBooks] = useState([]);
+  const [pagination, setPagination] = useState({
+    totalBooks: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: 12,
+  });
+  const [filterParams, setFilterParams] = useState(null);
   const [theme, setTheme] = useState("light");
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const { toasts, addToast, dismissToast } = useToasts();
+  const { isAuthModalOpen, closeAuthModal, user } = useAuth();
+  const initialFetchDone = useRef(false);
 
   const handleToggleTheme = useCallback(() => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
@@ -22,30 +33,47 @@ const App = () => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // Fetch books from backend API
-  const fetchBooksFromAPI = useCallback(async () => {
+  // Fetch books from backend API with optional server-side filter params
+  const fetchBooksFromAPI = useCallback(async (params = null) => {
     setIsLoading(true);
     setFetchError(null);
     try {
-      const response = await baseBookURL.get("/books");
+      const queryParams = params || {};
+      const response = await baseBookURL.get("/books", {
+        params: queryParams,
+      });
+
       if (response.data && Array.isArray(response.data.BookList)) {
         setBooks(response.data.BookList);
+        if (response.data.pagination) {
+          setPagination(response.data.pagination);
+        } else {
+          setPagination({
+            totalBooks: response.data.BookList.length,
+            totalPages: 1,
+            currentPage: 1,
+            limit: response.data.BookList.length,
+          });
+        }
       }
     } catch (error) {
       console.error("Error fetching books from backend server:", error);
       let message = error.response?.data?.Message || error.message;
 
       if (error.code === "ECONNABORTED") {
-        message = "Connection timed out. Render backend may still be spinning up from sleep.";
+        message =
+          "Connection timed out. Render backend may still be spinning up from sleep.";
       } else if (
         !error.response &&
         typeof window !== "undefined" &&
         window.location.protocol === "https:" &&
         error.config?.baseURL?.startsWith("http://localhost")
       ) {
-        message = "Mixed Content Block: Deployed HTTPS frontend cannot reach localhost:3000. Set VITE_API_URL in your Vercel settings to your Render backend URL.";
+        message =
+          "Mixed Content Block: Deployed HTTPS frontend cannot reach localhost:3000. Set VITE_API_URL in your Vercel settings to your Render backend URL.";
       } else if (!error.response) {
-        message = "Could not connect to backend server. The Render service may be starting up (cold start) or CORS is blocking the request.";
+        message =
+          "Could not connect to backend server. The Render service may be starting up (cold start) or CORS is blocking the request.";
       }
 
       setFetchError(message);
@@ -54,9 +82,19 @@ const App = () => {
     }
   }, []);
 
+  // Initial fetch
   useEffect(() => {
     fetchBooksFromAPI();
-  }, [fetchBooksFromAPI]);
+  }, [fetchBooksFromAPI, user]);
+
+  // Handle server-side filter changes
+  const handleFilterChange = useCallback(
+    (newParams) => {
+      setFilterParams(newParams);
+      fetchBooksFromAPI(newParams);
+    },
+    [fetchBooksFromAPI]
+  );
 
   const handleSaveBook = useCallback(
     async (bookData) => {
@@ -75,16 +113,16 @@ const App = () => {
             };
             setBooks((prev) =>
               prev.map((b) =>
-                String(b._id || b.id) === String(targetId) ? updatedBook : b,
-              ),
+                String(b._id || b.id) === String(targetId) ? updatedBook : b
+              )
             );
           } else {
             setBooks((prev) =>
               prev.map((b) =>
                 String(b._id || b.id) === String(targetId)
                   ? { ...b, ...bookData }
-                  : b,
-              ),
+                  : b
+              )
             );
           }
           addToast(`Updated details for "${bookData.bookName}"`, "success");
@@ -94,8 +132,8 @@ const App = () => {
             prev.map((b) =>
               String(b._id || b.id) === String(targetId)
                 ? { ...b, ...bookData }
-                : b,
-            ),
+                : b
+            )
           );
           addToast(`Updated details for "${bookData.bookName}"`, "success");
         }
@@ -106,6 +144,7 @@ const App = () => {
           const newBook = res.data?.data || { ...bookData, id: Date.now() };
           setBooks((prev) => [newBook, ...prev]);
           addToast(`Added "${bookData.bookName}" to collection`, "success");
+          fetchBooksFromAPI(filterParams);
         } catch (error) {
           console.error("API Create Error, applying local creation:", error);
           setBooks((prev) => [{ ...bookData, id: Date.now() }, ...prev]);
@@ -113,7 +152,7 @@ const App = () => {
         }
       }
     },
-    [addToast],
+    [addToast, fetchBooksFromAPI, filterParams]
   );
 
   const handleDeleteBook = useCallback(
@@ -126,19 +165,19 @@ const App = () => {
       ) {
         try {
           if (String(id).length === 24) {
-            // Delete from Express backend (DELETE /books/:id)
             await baseBookURL.delete(`/books/${id}`);
           }
         } catch (error) {
           console.error("API Delete Error:", error);
         }
         setBooks((prev) =>
-          prev.filter((b) => String(b._id || b.id) !== String(id)),
+          prev.filter((b) => String(b._id || b.id) !== String(id))
         );
         addToast(`Removed "${target.bookName}" from library`, "info");
+        fetchBooksFromAPI(filterParams);
       }
     },
-    [books, addToast],
+    [books, addToast, fetchBooksFromAPI, filterParams]
   );
 
   const handleToggleFavorite = useCallback(
@@ -162,17 +201,38 @@ const App = () => {
         prev.map((b) =>
           String(b._id || b.id) === String(id)
             ? { ...b, isFavorite: nextState }
-            : b,
-        ),
+            : b
+        )
       );
       addToast(
         nextState
           ? `Marked "${target.bookName}" as favorite`
           : `Removed "${target.bookName}" from favorites`,
-        "info",
+        "info"
       );
     },
-    [books, addToast],
+    [books, addToast]
+  );
+
+  // When quotes or notes or shelf are updated inside modals
+  const handleBookUpdated = useCallback((updatedBook) => {
+    const bookId = updatedBook._id || updatedBook.id;
+    setBooks((prev) =>
+      prev.map((b) =>
+        String(b._id || b.id) === String(bookId) ? updatedBook : b
+      )
+    );
+  }, []);
+
+  // When bulk import finishes
+  const handleImportSuccess = useCallback(
+    (importedList) => {
+      if (Array.isArray(importedList)) {
+        setBooks((prev) => [...importedList, ...prev]);
+      }
+      fetchBooksFromAPI();
+    },
+    [fetchBooksFromAPI]
   );
 
   return (
@@ -190,6 +250,13 @@ const App = () => {
           ))}
         </div>
 
+        {/* Global Auth Modal */}
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={closeAuthModal}
+          onToast={addToast}
+        />
+
         {/* Routes */}
         <Routes>
           <Route
@@ -199,17 +266,28 @@ const App = () => {
                 books={books}
                 isLoading={isLoading}
                 fetchError={fetchError}
-                onRetry={fetchBooksFromAPI}
+                onRetry={() => fetchBooksFromAPI(filterParams)}
                 onDeleteBook={handleDeleteBook}
                 onToggleFavorite={handleToggleFavorite}
+                onBookUpdated={handleBookUpdated}
+                onImportSuccess={handleImportSuccess}
                 theme={theme}
                 onToggleTheme={handleToggleTheme}
+                addToast={addToast}
+                pagination={pagination}
+                onFilterChange={handleFilterChange}
               />
             }
           />
           <Route
             path="/add"
-            element={<BookForm mode="add" onSaveBook={handleSaveBook} />}
+            element={
+              <BookForm
+                mode="add"
+                onSaveBook={handleSaveBook}
+                addToast={addToast}
+              />
+            }
           />
           <Route
             path="/edit/:id"
@@ -229,5 +307,11 @@ const App = () => {
     </BrowserRouter>
   );
 };
+
+const App = () => (
+  <AuthProvider>
+    <MainApp />
+  </AuthProvider>
+);
 
 export default App;

@@ -21,3 +21,16 @@ export const baseBookURL = axios.create({
   },
 });
 
+// Automatically inject JWT authorization token if present in localStorage
+baseBookURL.interceptors.request.use(
+  (config) => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("book_vault_token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);

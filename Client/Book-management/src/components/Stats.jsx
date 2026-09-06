@@ -1,16 +1,23 @@
 import React from "react";
-import { BookOpen, DollarSign, Tag, Heart, Award } from "lucide-react";
+import { BookOpen, DollarSign, Tag, Heart, Award, Quote, BookmarkCheck } from "lucide-react";
 
-const Stats = ({ books }) => {
+const Stats = ({ books, totalBooksCount }) => {
   if (!books || books.length === 0) return null;
 
-  const totalBooks = books.length;
+  const totalBooks = totalBooksCount || books.length;
   const totalValue = books.reduce(
     (sum, b) => sum + (Number(b.bookPrice) || 0),
-    0,
+    0
   );
   const avgPrice = totalValue / totalBooks;
   const favoritesCount = books.filter((b) => b.isFavorite).length;
+
+  const totalQuotes = books.reduce(
+    (sum, b) => sum + (Array.isArray(b.quotes) ? b.quotes.length : 0),
+    0
+  );
+
+  const readCount = books.filter((b) => b.shelf === "Read").length;
 
   const genreCounts = books.reduce((acc, b) => {
     const genre = b.genre || "Uncategorized";
@@ -20,7 +27,7 @@ const Stats = ({ books }) => {
 
   const [topGenre, maxCount] = Object.entries(genreCounts).reduce(
     (max, curr) => (curr[1] > max[1] ? curr : max),
-    ["N/A", 0],
+    ["N/A", 0]
   );
 
   const STAT_ITEMS = [
@@ -28,7 +35,7 @@ const Stats = ({ books }) => {
       id: "total",
       label: "COLLECTION SIZE",
       value: `${totalBooks} ${totalBooks === 1 ? "BOOK" : "BOOKS"}`,
-      subtext: "Total items in library",
+      subtext: `${readCount} marked as read`,
       icon: <BookOpen className="w-5 h-5 text-black stroke-2.5" />,
       badgeBg: "bg-[#FFDE59]",
     },
@@ -49,12 +56,12 @@ const Stats = ({ books }) => {
       badgeBg: "bg-[#00E5FF]",
     },
     {
-      id: "favorites",
-      label: "FAVORITES",
-      value: `${favoritesCount} SAVED`,
-      subtext: "Bookmarked titles",
-      icon: <Heart className="w-5 h-5 text-white fill-white stroke-2.5" />,
-      badgeBg: "bg-[#FF4D4D]",
+      id: "quotes",
+      label: "SAVED QUOTES",
+      value: `${totalQuotes} QUOTES`,
+      subtext: `${favoritesCount} favorites starred`,
+      icon: <Quote className="w-5 h-5 text-black stroke-2.5" />,
+      badgeBg: "bg-[#B197FC]",
     },
   ];
 

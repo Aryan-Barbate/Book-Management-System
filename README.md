@@ -62,15 +62,17 @@ Instant one-click bookmarking of favorite titles with quick filter isolation.
 
 ---
 
-## ✨ Key Features
+### ✨ Key Features (v2.0)
 
+- **🔐 Multi-User Authentication & Tenancy**: Email/password registration and login with JWT, Google OAuth integration, secure password hashing, and user-scoped collections with zero-friction 1-click demo access.
+- **🎨 Real Cover Art & File Uploads**: Real book cover rendering in grid and list views, image file upload support (Base64), image URL input, and automatic cover image population from ISBN lookups.
+- **📱 ISBN Auto-Fill & HTML5 Barcode Scanner**: Instant lookup from Google Books & OpenLibrary APIs to auto-fill title, author, description, publish date, page count, and genre; plus an in-browser HTML5 camera barcode scanner.
+- **📚 Custom Shelves & Multi-Tagging**: User-defined custom shelves ("Want to Read", "Currently Reading", "Read", "Favorites", and user-created collections like "Summer 2026") alongside flexible tagging chips.
+- **📝 Quotes & Reading Journal**: Dedicated per-book reading journal with page markers, blockquotes, and personal reflections, plus full-length study notes.
+- **🔄 CSV, Goodreads & JSON Import/Export**: Export your library as CSV or JSON, and import from standard CSVs or Goodreads library export files with smart schema mapping.
+- **📄 Server-Side Pagination**: Full limit/skip backend pagination with page number navigation, page size selectors (6, 12, 24, 48), and server-side filtering.
 - **🎨 Electric Neubrutalism UI**: Heavy 3px solid black borders, hard drop shadows (`shadow-[3px_3px_0px_#000]`), retro color accents (vibrant yellow `#FFDE59`, cyan, hot pink, lime), and tactile hover micro-interactions.
 - **🌓 Cyber Dark & Pop Light Modes**: Full theme switching with dynamic `data-theme` switching and high-contrast color token mapping.
-- **📖 Complete CRUD Lifecycle**: Add new books, view catalog, edit details inline, and delete books with instant optimistic state synchronization.
-- **💰 Automatic Collection Valuation**: Computes aggregate monetary valuation of your entire library in real-time.
-- **🔍 Multi-Faceted Filter & Search**: Instant client-side search across title, author, and description, with A-Z / price / rating sorting and genre pill filtering.
-- **❤️ Favorites Bookmarking**: Persistent favorite toggles to keep your top reads within reach.
-- **📱 Fluid Responsiveness**: Designed from the ground up for mobile, tablet, and widescreen desktop layouts.
 - **🚀 Cloud Production Ready**: Fully configured for one-click deployment on **Render** (API backend) and **Vercel** (SPA frontend).
 
 ---
@@ -242,16 +244,31 @@ The frontend will launch at: `http://localhost:5173`
 
 ## 📡 API Endpoints
 
-All book resource routes are accessible at `/books`:
+### Authentication (`/auth`)
 
 | Method | Endpoint | Description | Payload Sample |
 |---|---|---|---|
-| `GET` | `/` | API Status Landing | `{"status":"ok"}` |
-| `GET` | `/ping` | Dedicated Keep-Alive / Uptime Probe (Zero DB overhead, no-cache) | `{"status":"ok","message":"pong","timestamp":"...","uptime":120}` |
-| `GET` | `/books` | Retrieve all books | None |
-| `POST` | `/books` | Create a new book entry | `{ "bookName": "...", "bookAuthor": "...", "bookPrice": 19.99, ... }` |
-| `PUT` | `/books/:id` | Update an existing book | `{ "bookPrice": 24.99, "isFavorite": true }` |
+| `POST` | `/auth/register` | Create user account | `{ "name": "...", "email": "...", "password": "..." }` |
+| `POST` | `/auth/login` | Log in with email/password | `{ "email": "...", "password": "..." }` |
+| `POST` | `/auth/google` | Google OAuth token verification | `{ "credential": "..." }` |
+| `POST` | `/auth/demo` | 1-Click instant demo login | None |
+| `GET` | `/auth/me` | Current user profile | Bearer Token in Header |
+| `PUT` | `/auth/shelves` | Update custom shelves list | `{ "customShelves": ["Want to Read", "Summer 2026"] }` |
+
+### Books (`/books`)
+
+| Method | Endpoint | Description | Payload / Query Params |
+|---|---|---|---|
+| `GET` | `/books` | Retrieve paginated books | Query: `?page=1&limit=12&search=...&genre=...&shelf=...&tag=...&sortBy=...` |
+| `POST` | `/books` | Create new book entry | `{ "bookName": "...", "bookAuthor": "...", "coverUrl": "...", "shelf": "...", "tags": [...] }` |
+| `POST` | `/books/import` | Bulk import books | `{ "books": [ { "bookName": "...", "bookAuthor": "..." } ] }` |
+| `GET` | `/books/lookup/:isbn` | Query Google/OpenLibrary by ISBN | None |
+| `GET` | `/books/:id` | Get book details by ID | None |
+| `PUT` | `/books/:id` | Update book by ID | `{ "shelf": "Read", "rating": 5 }` |
 | `DELETE` | `/books/:id` | Delete a book by ID | None |
+| `POST` | `/books/:id/quotes` | Add quote to reading journal | `{ "quote": "...", "page": 42, "note": "..." }` |
+| `DELETE` | `/books/:id/quotes/:quoteId` | Remove quote from journal | None |
+| `PUT` | `/books/:id/notes` | Update private study notes | `{ "notes": "..." }` |
 
 ---
 

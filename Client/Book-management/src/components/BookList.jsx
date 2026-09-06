@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import BookCard from "./BookCard";
+import PaginationControls from "./PaginationControls";
+import BookJournalModal from "./BookJournalModal";
 import {
   Search,
   LayoutGrid,
@@ -11,8 +13,12 @@ import {
   Loader2,
   AlertTriangle,
   RefreshCw,
+  Bookmark,
+  FolderPlus,
+  Tag,
 } from "lucide-react";
-import { GENRE_FILTERS, getGenreColor } from "../constants";
+import { GENRE_FILTERS, getGenreColor, DEFAULT_SHELVES } from "../constants";
+import { useAuth } from "../context/AuthContext";
 
 const BookList = ({
   books,
@@ -23,6 +29,10 @@ const BookList = ({
   setSearchQuery,
   selectedGenre,
   setSelectedGenre,
+  selectedShelf,
+  setSelectedShelf,
+  selectedTag,
+  setSelectedTag,
   sortBy,
   setSortBy,
   viewMode,
@@ -30,8 +40,47 @@ const BookList = ({
   onDelete,
   onToggleFavorite,
   onResetFilters,
+  onBookUpdated,
   totalBooksCount,
+  // Pagination props
+  currentPage = 1,
+  totalPages = 1,
+  limit = 12,
+  onPageChange,
+  onLimitChange,
+  onToast,
 }) => {
+  const { user, updateCustomShelves, isAuthenticated } = useAuth();
+  const [activeJournalBook, setActiveJournalBook] = useState(null);
+  const [isAddingShelf, setIsAddingShelf] = useState(false);
+  const [newShelfName, setNewShelfName] = useState("");
+
+  const userShelves = user?.customShelves?.length
+    ? user.customShelves
+    : DEFAULT_SHELVES;
+  const allShelves = ["All Shelves", ...userShelves];
+
+  const handleCreateShelf = async (e) => {
+    e.preventDefault();
+    const trimmed = newShelfName.trim();
+    if (!trimmed) return;
+
+    if (userShelves.includes(trimmed)) {
+      onToast?.("Shelf already exists.", "info");
+      setSelectedShelf(trimmed);
+      setIsAddingShelf(false);
+      setNewShelfName("");
+      return;
+    }
+
+    const updated = [...userShelves, trimmed];
+    await updateCustomShelves(updated);
+    setSelectedShelf(trimmed);
+    setIsAddingShelf(false);
+    setNewShelfName("");
+    onToast?.(`Created new shelf "${trimmed}"!`, "success");
+  };
+
   return (
     <section className="space-y-6" aria-label="Book Collection">
       {/* Controls & Filter Panel */}
@@ -42,7 +91,7 @@ const BookList = ({
             <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-black pointer-events-none z-10 stroke-2.5" />
             <input
               type="text"
-              placeholder="SEARCH TITLE, AUTHOR, OR SUMMARY..."
+              placeholder="SEARCH TITLE, AUTHOR, TAGS, ISBN, OR NOTES..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="nb-input nb-input-has-icon pr-12 font-extrabold uppercase placeholder:text-black/50"
@@ -66,7 +115,7 @@ const BookList = ({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="nb-input py-2 px-3 text-xs font-black uppercase min-w-37.5 cursor-pointer"
+                className="nb-input py-2 px-3 text-xs font-black uppercase min-w-[150px] cursor-pointer"
               >
                 <option value="title-asc">Title (A-Z)</option>
                 <option value="title-desc">Title (Z-A)</option>
@@ -106,38 +155,135 @@ const BookList = ({
           </div>
         </div>
 
-        {/* Genre Pill Selector */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-1 scrollbar-none">
-          {GENRE_FILTERS.map((genre) => {
-            const isSelected = selectedGenre === genre;
-            const colorClass = getGenreColor(genre, isSelected);
-            return (
+        {/* Shelves Horizontal Selector */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-wider opacity-60 flex items-center gap-1.5">
+              <Bookmark className="w-3.5 h-3.5 stroke-2.5" />
+              <span>BOOK SHELVES & COLLECTIONS</span>
+            </span>
+
+            {/* Inline Add Shelf Button */}
+            {!isAddingShelf ? (
               <button
-                key={genre}
-                onClick={() => setSelectedGenre(genre)}
-                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all border-2 border-black flex items-center gap-2 cursor-pointer ${colorClass} ${
-                  isSelected
-                    ? "shadow-[3px_3px_0px_0px_#000] -translate-y-0.5"
-                    : "shadow-[1.5px_1.5px_0px_0px_#000]"
-                }`}
+                type="button"
+                onClick={() => setIsAddingShelf(true)}
+                className="text-[11px] font-black uppercase hover:underline flex items-center gap-1 cursor-pointer text-[#00E5FF] dark:text-[#00E5FF]"
               >
-                {genre === "Favorites" && (
-                  <Heart
-                    className={`w-3.5 h-3.5 ${isSelected ? "fill-white text-white" : "fill-[#FF4D4D] text-[#FF4D4D]"}`}
-                  />
-                )}
-                <span>{genre}</span>
+                <FolderPlus className="w-3.5 h-3.5 stroke-2.5" />
+                <span>+ NEW SHELF</span>
               </button>
-            );
-          })}
+            ) : (
+              <form onSubmit={handleCreateShelf} className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  placeholder="e.g. Summer 2026..."
+                  value={newShelfName}
+                  onChange={(e) => setNewShelfName(e.target.value)}
+                  className="nb-input py-0.5 px-2 text-xs font-bold w-36"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="nb-btn nb-btn-lime nb-btn-sm py-0.5 px-2 text-[10px]"
+                >
+                  SAVE
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingShelf(false)}
+                  className="p-1 hover:text-[#FF4D4D] cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5 stroke-3" />
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {allShelves.map((shelf) => {
+              const isSelected = selectedShelf === shelf;
+              return (
+                <button
+                  key={shelf}
+                  onClick={() => setSelectedShelf(shelf)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all border-2 border-black flex items-center gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? "bg-[#00E5FF] text-black shadow-[2.5px_2.5px_0px_0px_#000] -translate-y-0.5"
+                      : "bg-white text-black hover:bg-neutral-100 shadow-[1px_1px_0px_0px_#000]"
+                  }`}
+                >
+                  <Bookmark
+                    className={`w-3 h-3 ${
+                      isSelected ? "fill-black" : "stroke-2"
+                    }`}
+                  />
+                  <span>{shelf}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Genre Pill Selector */}
+        <div className="space-y-1.5 pt-1 border-t border-black/10 dark:border-white/10">
+          <span className="text-[11px] font-black uppercase tracking-wider opacity-60">
+            GENRES
+          </span>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {GENRE_FILTERS.map((genre) => {
+              const isSelected = selectedGenre === genre;
+              const colorClass = getGenreColor(genre, isSelected);
+              return (
+                <button
+                  key={genre}
+                  onClick={() => setSelectedGenre(genre)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all border-2 border-black flex items-center gap-2 cursor-pointer ${colorClass} ${
+                    isSelected
+                      ? "shadow-[2.5px_2.5px_0px_0px_#000] -translate-y-0.5"
+                      : "shadow-[1px_1px_0px_0px_#000]"
+                  }`}
+                >
+                  {genre === "Favorites" && (
+                    <Heart
+                      className={`w-3.5 h-3.5 ${
+                        isSelected
+                          ? "fill-white text-white"
+                          : "fill-[#FF4D4D] text-[#FF4D4D]"
+                      }`}
+                    />
+                  )}
+                  <span>{genre}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Active Tag Filter Indicator */}
+        {selectedTag && (
+          <div className="flex items-center gap-2 pt-1 border-t border-black/10">
+            <span className="text-xs font-black uppercase">FILTERED BY TAG:</span>
+            <span className="nb-badge nb-badge-lime text-xs flex items-center gap-1">
+              <Tag className="w-3.5 h-3.5 stroke-2.5" />
+              <span>#{selectedTag}</span>
+              <button
+                type="button"
+                onClick={() => setSelectedTag("")}
+                className="ml-1 hover:text-[#FF4D4D] cursor-pointer"
+              >
+                <X className="w-3 h-3 stroke-3" />
+              </button>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Results Header Count */}
       <div className="flex items-center justify-between px-1">
         <p className="text-sm font-extrabold uppercase">
-          SHOWING <span className="underline font-black">{books.length}</span>{" "}
-          OF {totalBooksCount} BOOKS
+          SHOWING <span className="underline font-black">{books.length}</span> OF{" "}
+          {totalBooksCount} BOOKS
           {selectedGenre !== "All" && (
             <span>
               {" "}
@@ -145,9 +291,19 @@ const BookList = ({
               <span className="nb-badge nb-badge-yellow">{selectedGenre}</span>
             </span>
           )}
+          {selectedShelf !== "All Shelves" && (
+            <span>
+              {" "}
+              ON{" "}
+              <span className="nb-badge nb-badge-cyan">{selectedShelf}</span>
+            </span>
+          )}
         </p>
 
-        {(searchQuery || selectedGenre !== "All") && (
+        {(searchQuery ||
+          selectedGenre !== "All" ||
+          selectedShelf !== "All Shelves" ||
+          selectedTag) && (
           <button
             onClick={onResetFilters}
             className="nb-badge nb-badge-white text-xs cursor-pointer hover:bg-[#FFDE59]"
@@ -201,7 +357,7 @@ const BookList = ({
         </div>
       )}
 
-      {/* Empty State (when loaded and no error, but 0 matching books) */}
+      {/* Empty State */}
       {!isLoading && !fetchError && books.length === 0 && (
         <div className="nb-card nb-card-yellow p-10 text-center my-8">
           <div className="w-16 h-16 rounded-xl bg-black text-[#CCFF00] border-3 border-black flex items-center justify-center mx-auto mb-4 shadow-[4px_4px_0px_0px_#000]">
@@ -211,7 +367,7 @@ const BookList = ({
             NO MATCHING BOOKS FOUND
           </h3>
           <p className="text-sm font-bold text-black/80 max-w-sm mx-auto mb-6">
-            We couldn't find any literature matching your current search filter
+            We couldn't find any literature matching your current search, shelf,
             or genre selection.
           </p>
           <button onClick={onResetFilters} className="nb-btn nb-btn-black">
@@ -222,23 +378,50 @@ const BookList = ({
 
       {/* Book Grid / List */}
       {!isLoading && !fetchError && books.length > 0 && (
-        <div
-          className={
-            viewMode === "grid"
-              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-              : "space-y-4"
-          }
-        >
-          {books.map((book) => (
-            <BookCard
-              key={book._id || book.id}
-              book={book}
-              viewMode={viewMode}
-              onDelete={onDelete}
-              onToggleFavorite={onToggleFavorite}
-            />
-          ))}
-        </div>
+        <>
+          <div
+            className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                : "space-y-4"
+            }
+          >
+            {books.map((book) => (
+              <BookCard
+                key={book._id || book.id}
+                book={book}
+                viewMode={viewMode}
+                onDelete={onDelete}
+                onToggleFavorite={onToggleFavorite}
+                onOpenJournal={(b) => setActiveJournalBook(b)}
+              />
+            ))}
+          </div>
+
+          {/* Server-Side Pagination Controls */}
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalBooks={totalBooksCount}
+            limit={limit}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+          />
+        </>
+      )}
+
+      {/* Reading Journal Modal */}
+      {activeJournalBook && (
+        <BookJournalModal
+          isOpen={Boolean(activeJournalBook)}
+          onClose={() => setActiveJournalBook(null)}
+          book={activeJournalBook}
+          onBookUpdated={(updated) => {
+            setActiveJournalBook(updated);
+            onBookUpdated?.(updated);
+          }}
+          onToast={onToast}
+        />
       )}
     </section>
   );
