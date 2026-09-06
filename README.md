@@ -227,15 +227,15 @@ The frontend will launch at: `http://localhost:5173`
 5. Add the environment variables:
    - `MONGODB_URI`: *Your MongoDB connection string*
    - `DB_NAME`: `Book-Management`
-6. Note your live backend URL (e.g., `https://book-management-api.onrender.com`).
-7. **Keep Active 24/7 (Prevent Sleep)**: Render Free tier spins down after 15 minutes of inactivity. The backend automatically pings itself via `RENDER_EXTERNAL_URL/ping` every 14 minutes. For 100% reliability, you can also add a free ping monitor on [cron-job.org](https://cron-job.org/) or [UptimeRobot](https://uptimerobot.com/) targeting `https://<your-backend>.onrender.com/ping` every 10–14 minutes.
+6. Live backend URL: `https://book-management-system-m43r.onrender.com`
+7. **Keep Active 24/7 (Prevent Sleep)**: Render Free tier spins down after 15 minutes of inactivity. The backend automatically pings itself via `RENDER_EXTERNAL_URL/ping` every 14 minutes. For 100% reliability, you can also add a free ping monitor on [cron-job.org](https://cron-job.org/) or [UptimeRobot](https://uptimerobot.com/) targeting `https://book-management-system-m43r.onrender.com/ping` every 10–14 minutes.
 
 ### Deploying the Frontend on Vercel
 1. Import your repository on [Vercel](https://vercel.com/).
 2. Set **Root Directory** to `Client/Book-management`.
 3. Framework Preset: `Vite`.
 4. Add the environment variable:
-   - `VITE_API_URL`: `https://<your-backend>.onrender.com` *(without trailing slash)*
+   - `VITE_API_URL`: `https://book-management-system-m43r.onrender.com` *(without trailing slash)*
 5. Click **Deploy**.
 
 ---

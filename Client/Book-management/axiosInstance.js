@@ -6,15 +6,12 @@ const isLocalhost =
   (window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1");
 
-// If deployed and VITE_API_URL was not set during build, warn in console
-if (typeof window !== "undefined" && !isLocalhost && (!rawUrl || rawUrl.includes("localhost"))) {
-  console.error(
-    "[BookVault Config] VITE_API_URL is missing or set to localhost on a deployed website!\n" +
-    "To fix: Set VITE_API_URL=https://<your-backend>.onrender.com in your Vercel Project Settings -> Environment Variables, then redeploy."
-  );
-}
+// Safe fallback: when deployed, use the live Render backend if VITE_API_URL is omitted
+const defaultBaseUrl = !isLocalhost
+  ? "https://book-management-system-m43r.onrender.com"
+  : "http://localhost:3000";
 
-export const apiBaseUrl = (rawUrl || "http://localhost:3000").replace(/\/+$/, "");
+export const apiBaseUrl = (rawUrl || defaultBaseUrl).replace(/\/+$/, "");
 
 export const baseBookURL = axios.create({
   baseURL: apiBaseUrl,
