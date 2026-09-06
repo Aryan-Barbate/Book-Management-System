@@ -36,33 +36,78 @@
   --nb-radius: 12px;
   --nb-radius-sm: 8px;
   --nb-radius-pill: 9999px;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 [data-theme="dark"] {
-  /* Cyber Neubrutalism Dark Mode */
-  --bg-page: #121216;
-  --bg-card: #1c1c24;
-  --bg-card-alt: #262632;
-  --bg-panel: #2a2a38;
+  /* Cyber Neubrutalism Dark Mode - Refined & High-Contrast */
+  --bg-page: #0d0f17;
+  --bg-card: #161824;
+  --bg-card-alt: #1f2334;
+  --bg-panel: #282d42;
 
-  --text-ink: #ffffff;
-  --text-body: #e2e8f0;
-  --text-mute: #a0aec0;
+  --text-ink: #f8fafc;
+  --text-body: #cbd5e1;
+  --text-mute: #8892b0;
 
-  --border-color: #000000;
-  --shadow-color: #000000;
+  --border-color: #3b4366;
+  --shadow-color: #05060a;
 
-  --pop-yellow: #ffe600;
-  --pop-pink: #ff3399;
-  --pop-cyan: #00f0ff;
-  --pop-lime: #ccff00;
-  --pop-orange: #ff7700;
-  --pop-purple: #a855f7;
-  --pop-red: #ff3344;
-  --pop-green: #00ff66;
+  --pop-yellow: #ffd633;
+  --pop-pink: #f43f8e;
+  --pop-cyan: #00d9f5;
+  --pop-lime: #b8f000;
+  --pop-orange: #ff8c3b;
+  --pop-purple: #b088ff;
+  --pop-red: #ff4d61;
+  --pop-green: #22c55e;
 
-  --input-bg: #1c1c24;
-  --modal-bg: #1c1c24;
+  --input-bg: #1a1e2d;
+  --modal-bg: #161824;
+}
+
+[data-theme="dark"] .nb-card {
+  border-color: var(--border-color);
+  box-shadow: 4px 4px 0px 0px var(--shadow-color);
+}
+
+[data-theme="dark"] .nb-btn-white {
+  background-color: var(--bg-card-alt);
+  color: var(--text-ink);
+  border-color: var(--border-color);
+  box-shadow: 2.5px 2.5px 0px 0px var(--shadow-color);
+}
+
+[data-theme="dark"] .nb-btn-white:hover {
+  background-color: var(--bg-panel);
+  color: var(--pop-yellow);
+  border-color: var(--pop-yellow);
+}
+
+[data-theme="dark"] .nb-badge-white {
+  background-color: var(--bg-card-alt);
+  color: var(--text-ink);
+  border-color: var(--border-color);
+  box-shadow: 2px 2px 0px 0px var(--shadow-color);
+}
+
+[data-theme="dark"] .border-black {
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .border-black\/10 {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .border-black\/20 {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+[data-theme="dark"] .border-black\/40 {
+  border-color: rgba(255, 255, 255, 0.35) !important;
 }
 
 @layer base {
@@ -181,9 +226,9 @@
   cursor: pointer;
   user-select: none;
   transition:
-    transform 0.1s ease,
-    box-shadow 0.1s ease,
-    background-color 0.15s ease;
+    transform 0.1s var(--ease-out),
+    box-shadow 0.1s var(--ease-out),
+    background-color 0.15s var(--ease-out);
   white-space: nowrap;
 }
 
@@ -195,6 +240,16 @@
 .nb-btn:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0px 0px var(--shadow-color);
+}
+
+/* Reduced motion preferences - keep subtle feedback but remove large movements */
+@media (prefers-reduced-motion: reduce) {
+  .nb-btn {
+    transition:
+      background-color 0.1s var(--ease-out),
+      box-shadow 0.1s var(--ease-out);
+    /* remove transform transitions to avoid positional movement */
+  }
 }
 
 .nb-btn-yellow {
@@ -358,4 +413,69 @@
 
 .animate-slide-down {
   animation: nbSlideDown 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Toast exit animation */
+.toast-exiting {
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.2s var(--ease-out), opacity 0.2s var(--ease-out);
+}
+
+/* Reduced motion preferences for toast exit */
+@media (prefers-reduced-motion: reduce) {
+  .toast-exiting {
+    transition: opacity 0.2s var(--ease-out);
+  }
+}
+
+/* Modal exit animation */
+.modal-exiting {
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.15s var(--ease-out), opacity 0.15s var(--ease-out);
+}
+
+/* Reduced motion preferences for modal exit */
+@media (prefers-reduced-motion: reduce) {
+  .modal-exiting {
+    transition: opacity 0.15s var(--ease-out);
+  }
+}
+
+/* Book card entrance animation via @starting-style */
+@starting-style {
+  .book-card {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+/* Base card styles with transition for transform and opacity */
+.book-card {
+  transform: scale(1);
+  opacity: 1;
+  transition: transform 0.2s var(--ease-out), opacity 0.2s var(--ease-out);
+}
+
+/* Exit animation class */
+.book-card-exiting {
+  transform: scale(0.95);
+  opacity: 0;
+}
+
+/* Reduced motion preferences - remove transform transitions, keep opacity */
+@media (prefers-reduced-motion: reduce) {
+  @starting-style {
+    .book-card {
+      opacity: 0;
+    }
+  }
+  .book-card {
+    opacity: 1;
+    transition: opacity 0.2s var(--ease-out);
+  }
+  .book-card-exiting {
+    opacity: 0;
+  }
 }

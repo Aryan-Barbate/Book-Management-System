@@ -51,7 +51,9 @@ export const GENRE_COLORS = {
 };
 
 export const getGenreColor = (genre, isSelected = false) => {
-  if (!isSelected) return "bg-white text-black hover:bg-[#FFDE59]";
+  if (!isSelected) {
+    return "bg-white dark:bg-[#1f2334] text-black dark:text-white hover:bg-[#FFDE59] dark:hover:bg-[#282d42] dark:hover:text-[#FFDE59]";
+  }
   return GENRE_COLORS[genre] || GENRE_COLORS.default;
 };
 

@@ -140,6 +140,28 @@ const Home = ({
     setCurrentPage(1);
   };
 
+  const hasActiveFilters = Boolean(
+    searchQuery.trim() ||
+    selectedGenre !== "All" ||
+    selectedShelf !== "All Shelves" ||
+    selectedTag ||
+    sortBy !== "title-asc" ||
+    currentPage !== 1
+  );
+
+  const handleHomeClick = (e) => {
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+    const hadFilters = hasActiveFilters;
+    handleResetFilters();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    onRetry?.();
+    if (hadFilters) {
+      addToast?.("Library reset to full collection & top", "info");
+    }
+  };
+
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -159,6 +181,8 @@ const Home = ({
         theme={theme}
         onToggleTheme={onToggleTheme}
         onOpenImportExport={() => setIsImportExportOpen(true)}
+        onHomeClick={handleHomeClick}
+        hasActiveFilters={hasActiveFilters}
       />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 sm:pt-10">

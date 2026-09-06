@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   X,
+  Library,
   BookOpen,
   User,
   DollarSign,
@@ -16,7 +17,6 @@ import {
   Bookmark,
   Hash,
   Layers,
-  Check,
   Plus,
   Loader2,
 } from "lucide-react";
@@ -351,30 +351,38 @@ const BookForm = ({
 
   return (
     <div className="min-h-screen pb-16 transition-colors duration-200">
-      {/* Back button */}
-      <div className="fixed top-4 left-4 z-50">
+      {/* Top navigation actions */}
+      <div className="fixed top-4 left-4 z-50 flex items-center gap-2">
+        <button
+          onClick={() => navigate("/")}
+          className="h-10 px-3 rounded-lg bg-white dark:bg-[#1f2334] text-black dark:text-white border-2 border-black flex items-center gap-2 font-black text-xs shadow-[2px_2px_0px_0px_#000] hover:bg-[#FFDE59] dark:hover:bg-[#282d42] dark:hover:text-[#FFDE59] transition-colors cursor-pointer"
+          title="Return to Library Home"
+        >
+          <Library className="w-4 h-4 stroke-2.5" />
+          <span className="hidden sm:inline">HOME</span>
+        </button>
         <button
           onClick={handleCancel}
-          className="w-10 h-10 rounded-lg bg-white text-black border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#FFDE59] transition-colors cursor-pointer"
-          title="Go back to library"
+          className="w-10 h-10 rounded-lg bg-white dark:bg-[#1f2334] text-black dark:text-white border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#FF4D4D] hover:text-white transition-colors cursor-pointer"
+          title="Cancel"
         >
           <X className="w-5 h-5 stroke-2.5" />
         </button>
       </div>
 
       <div className="pt-16 sm:pt-20 px-4 max-w-3xl mx-auto">
-        <div className="bg-white dark:bg-[#1C1C24] border-3 border-black rounded-2xl shadow-[8px_8px_0px_0px_#000] overflow-hidden">
+        <div className="bg-white dark:bg-[#161824] border-3 border-black rounded-2xl shadow-[8px_8px_0px_0px_#000] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 nb-card-yellow border-b-3 border-black">
+          <div className="flex items-center justify-between px-6 py-4 bg-[#FFDE59] dark:bg-[#1f2334] text-black dark:text-white border-b-3 border-black">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-black text-[#CCFF00] border-2 border-black shadow-[2px_2px_0px_0px_#FFFDF5]">
                 <Sparkles className="w-5 h-5 stroke-2.5" />
               </div>
               <div>
-                <h2 className="text-xl font-black uppercase text-black">
+                <h2 className="text-xl font-black uppercase text-black dark:text-white">
                   {headerTitle}
                 </h2>
-                <p className="text-xs font-bold text-black/80">
+                <p className="text-xs font-bold text-black/80 dark:text-slate-300">
                   {headerSubtitle}
                 </p>
               </div>
@@ -382,7 +390,7 @@ const BookForm = ({
 
             <button
               onClick={handleCancel}
-              className="w-8 h-8 rounded-lg bg-white text-black border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#FF4D4D] hover:text-white transition-colors cursor-pointer"
+              className="w-8 h-8 rounded-lg bg-white dark:bg-[#161824] text-black dark:text-white border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#FF4D4D] hover:text-white transition-colors cursor-pointer"
               aria-label="Close"
             >
               <X className="w-4 h-4 stroke-3" />
